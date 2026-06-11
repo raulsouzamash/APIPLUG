@@ -1,4 +1,5 @@
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
+const kv = Redis.fromEnv();
 const { requireAuth } = require('../_lib/auth');
 
 module.exports = async function handler(req, res) {

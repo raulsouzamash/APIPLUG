@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const { setAuthCookie } = require('../_lib/auth');
+const { Redis } = require('@upstash/redis');
+const kv = Redis.fromEnv();
+const { serialize } = require('cookie');
 
 // Rate limiter em memória (por instância de função — suficiente para ferramenta interna)
 const _attempts = new Map();
@@ -24,7 +27,7 @@ function isRateLimited(ip) {
   return false;
 }
 
-const { kv } = require('@vercel/kv');
+
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {

@@ -166,6 +166,13 @@ function renderApp() {
         </div>
       </div>
 
+      <!-- Busca de Agendamentos -->
+      <div class="card">
+        <div class="card-label">📅 Exportar Agendamentos Pendentes</div>
+        <p style="font-size: 13px; color: var(--text2); margin-top: 0; margin-bottom: 12px;">Busca e exporta planilha com todos os pedidos que não foram enviados e possuem "buffering_date".</p>
+        <button class="btn-dl green" id="btnDownloadBuffered" style="padding: 10px 16px;">⬇ Baixar Agendamentos (.xlsx)</button>
+      </div>
+
       <!-- Busca JSON -->
       <div class="card">
         <div class="card-label">🔎 Inspecionar Pedido (JSON Completo)</div>
@@ -259,6 +266,7 @@ function renderApp() {
   
   document.getElementById('btnSearchJson').addEventListener('click', handleSearchJson);
   document.getElementById('btnCopyJson').addEventListener('click', copyJsonResult);
+  document.getElementById('btnDownloadBuffered').addEventListener('click', handleDownloadBuffered);
 
   if (state.user?.role === 'admin') {
     document.getElementById('btnAdminPanel').addEventListener('click', openAdminPanel);
@@ -616,6 +624,54 @@ function copyJsonResult() {
   navigator.clipboard.writeText(text).then(() => {
     toast('JSON copiado!', 'success');
   });
+}
+
+// ─── Buffered Orders (Agendamentos) ───────────────────────
+async function handleDownloadBuffered() {
+  const btn = document.getElementById('btnDownloadBuffered');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '⏳ Buscando na Pluggto (pode demorar)...';
+  btn.disabled = true;
+
+  try {
+    const data = await apiFetch('/api/orders/buffered');
+    
+    if (!data.orders || data.orders.length === 0) {
+      toast('Nenhum agendamento pendente encontrado.', 'info');
+      return;
+    }
+
+    toast(`Gerando planilha com ${data.orders.length} agendamentos...`, 'success');
+    
+    const wsData = [['ID Interno', 'ID Externo', 'Status', 'Data Agendamento (Buffering)', 'Previsão de Coleta', 'Transportadora', 'Método']];
+    data.orders.forEach(o => {
+      wsData.push([
+        o.id, 
+        o.external, 
+        o.status, 
+        o.buffering_date ? new Date(o.buffering_date).toLocaleString('pt-BR') : '',
+        o.expected_collection_date && o.expected_collection_date !== 'N/A' ? new Date(o.expected_collection_date).toLocaleString('pt-BR') : o.expected_collection_date,
+        o.shipping_company,
+        o.shipping_method
+      ]);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Agendamentos');
+    XLSX.writeFile(wb, `Agendamentos_Pendentes_${datestamp()}.xlsx`);
+    
+  } catch (err) {
+    if (err.message.includes('Não autenticado')) {
+      toast('Sessão expirada.', 'error');
+      setTimeout(renderLogin, 1500);
+    } else {
+      toast('Erro: ' + err.message, 'error');
+    }
+  } finally {
+    btn.innerHTML = originalText;
+    btn.disabled = false;
+  }
 }
 
 // ─── Admin Panel ──────────────────────────────────────────
