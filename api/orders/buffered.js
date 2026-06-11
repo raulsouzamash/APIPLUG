@@ -17,10 +17,10 @@ module.exports = async function handler(req, res) {
     let page = 1;
     let hasMore = true;
 
-    // Buscamos pedidos com status buffered (e approved por segurança, pois não foram enviados)
-    // A Pluggto normalmente suporta comma-separated status
-    while (hasMore && page <= 10) { // limite de segurança de 10 páginas (1000 pedidos)
-      const resp = await fetch(`${API_BASE}/orders?status=buffered,approved&limit=100&page=${page}`, {
+    // Vamos tentar buscar por sub_status=waiting_expedition para reduzir a carga.
+    // E também limitamos em até 50 páginas (5000 pedidos)
+    while (hasMore && page <= 50) { 
+      const resp = await fetch(`${API_BASE}/orders?sub_status=waiting_expedition&limit=100&page=${page}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -29,7 +29,7 @@ module.exports = async function handler(req, res) {
       }
 
       const data = await resp.json();
-      const results = data.result || data.Order || []; // A API da Pluggto pode retornar em 'result' ou direto
+      const results = data.result || data.Order || []; 
 
       if (results.length === 0) {
         hasMore = false;
@@ -40,18 +40,32 @@ module.exports = async function handler(req, res) {
       }
     }
 
-    // Filtra apenas os que possuem buffering_date (agendamentos) e mapeia os dados
+    // Caso a API ignore o sub_status e retorne tudo, precisamos garantir que o filtro local funcione.
+    // Além disso, a data de agendamento pode estar na raiz (buffering_date) ou dentro de shipments[].
     const scheduledOrders = allOrders
-      .filter(o => o.buffering_date)
-      .map(o => ({
-        id: o.id,
-        external: o.external || 'N/A',
-        status: o.status,
-        buffering_date: o.buffering_date,
-        expected_collection_date: o.expected_collection_date || 'N/A',
-        shipping_company: o.shipping_company || 'N/A',
-        shipping_method: o.shipping_method || 'N/A',
-      }));
+      .filter(o => {
+        const rootBuffered = !!o.buffering_date;
+        const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
+        return rootBuffered || shipmentBuffered;
+      })
+      .map(o => {
+        // Pega do root ou do primeiro shipment
+        const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || null;
+        const eDate = o.expected_collection_date || (o.shipments && o.shipments[0]?.expected_collection_date) || null;
+        const sComp = o.shipping_company || (o.shipments && o.shipments[0]?.shipping_company) || 'N/A';
+        const sMeth = o.shipping_method || (o.shipments && o.shipments[0]?.shipping_method) || 'N/A';
+
+        return {
+          id: o.id,
+          external: o.external || 'N/A',
+          status: o.status,
+          sub_status: o.sub_status,
+          buffering_date: bDate,
+          expected_collection_date: eDate,
+          shipping_company: sComp,
+          shipping_method: sMeth,
+        };
+      });
 
     return res.status(200).json({ ok: true, total: scheduledOrders.length, orders: scheduledOrders });
   } catch (err) {

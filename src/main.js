@@ -643,12 +643,13 @@ async function handleDownloadBuffered() {
 
     toast(`Gerando planilha com ${data.orders.length} agendamentos...`, 'success');
     
-    const wsData = [['ID Interno', 'ID Externo', 'Status', 'Data Agendamento (Buffering)', 'Previsão de Coleta', 'Transportadora', 'Método']];
+    const wsData = [['ID Interno', 'ID Externo', 'Status', 'Sub-status', 'Data Agendamento (Buffering)', 'Previsão de Coleta', 'Transportadora', 'Método']];
     data.orders.forEach(o => {
       wsData.push([
         o.id, 
         o.external, 
         o.status, 
+        o.sub_status || '',
         o.buffering_date ? new Date(o.buffering_date).toLocaleString('pt-BR') : '',
         o.expected_collection_date && o.expected_collection_date !== 'N/A' ? new Date(o.expected_collection_date).toLocaleString('pt-BR') : o.expected_collection_date,
         o.shipping_company,
