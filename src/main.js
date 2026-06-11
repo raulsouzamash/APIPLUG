@@ -504,20 +504,32 @@ function downloadLabelsXlsx() {
 }
 
 async function downloadAllPdfs() {
-  const withUrl = state.results.filter(r => r.labelUrl);
-  if (!withUrl.length) { toast('Nenhuma etiqueta disponível.', 'error'); return; }
-  toast(`Baixando ${withUrl.length} PDFs...`, 'info');
-  for (const r of withUrl) {
-    const a = document.createElement('a');
-    a.href = r.labelUrl;
-    a.download = `etiqueta_${r.ext}.pdf`;
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    await sleep(700);
+  const validOrders = state.results.filter(r => r.orderId && r.labelUrl);
+  if (!validOrders.length) { toast('Nenhuma etiqueta disponível.', 'error'); return; }
+  
+  toast(`Consolidando etiquetas de ${validOrders.length} pedidos...`, 'info');
+  const orderIds = validOrders.map(r => r.orderId);
+
+  try {
+    const data = await apiFetch('/api/orders/bulk-labels', {
+      method: 'POST',
+      body: { orderIds }
+    });
+
+    if (!data.urls || data.urls.length === 0) {
+      toast('Não foi possível gerar a etiqueta unificada.', 'error');
+      return;
+    }
+
+    toast(`Pronto! Abrindo ${data.urls.length} PDF(s) unificado(s)...`, 'success');
+    for (const url of data.urls) {
+      // Abre o PDF consolidado em uma nova aba para o navegador não bloquear o download
+      window.open(url, '_blank');
+      await sleep(500);
+    }
+  } catch (err) {
+    toast(`Erro ao unificar etiquetas: ${err.message}`, 'error');
   }
-  toast(`${withUrl.length} PDFs iniciados!`, 'success');
 }
 
 // ─── JSON Search ──────────────────────────────────────────
