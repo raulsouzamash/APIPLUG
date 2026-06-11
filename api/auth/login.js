@@ -24,6 +24,8 @@ function isRateLimited(ip) {
   return false;
 }
 
+const { kv } = require('@vercel/kv');
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método não permitido' });
@@ -47,7 +49,7 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
   }
 
-  const appEmail    = process.env.APP_EMAIL;
+  const appEmail = process.env.APP_EMAIL;
   const passwordHash = process.env.APP_PASSWORD_HASH;
 
   if (!appEmail || !passwordHash) {
@@ -55,16 +57,33 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Configuração de autenticação ausente.' });
   }
 
-  // Comparações em tempo constante
-  const emailOk    = email.toLowerCase().trim() === appEmail.toLowerCase().trim();
-  const passwordOk = await bcrypt.compare(password, passwordHash);
+  const normalizedEmail = email.toLowerCase().trim();
+  let role = null;
+  let validPassword = false;
 
-  // Delay artificial para evitar timing attacks mesmo em caso de email errado
-  if (!emailOk || !passwordOk) {
+  // Verifica se é o Admin Principal (via .env)
+  if (normalizedEmail === appEmail.toLowerCase().trim()) {
+    validPassword = await bcrypt.compare(password, passwordHash);
+    if (validPassword) role = 'admin';
+  } else {
+    // Se não for o Admin Principal, procura no Vercel KV
+    try {
+      const kvUser = await kv.get(`user:${normalizedEmail}`);
+      if (kvUser && kvUser.passwordHash) {
+        validPassword = await bcrypt.compare(password, kvUser.passwordHash);
+        if (validPassword) role = kvUser.role || 'user';
+      }
+    } catch (err) {
+      console.error('[login] Erro ao consultar KV:', err.message);
+    }
+  }
+
+  // Delay artificial para evitar timing attacks
+  if (!validPassword) {
     await new Promise(r => setTimeout(r, 400 + Math.random() * 200));
     return res.status(401).json({ error: 'Email ou senha incorretos.' });
   }
 
-  setAuthCookie(res, { email: appEmail });
-  return res.status(200).json({ ok: true });
+  setAuthCookie(res, { email: normalizedEmail, role });
+  return res.status(200).json({ ok: true, role });
 };

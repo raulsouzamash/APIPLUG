@@ -121,6 +121,7 @@ function renderApp() {
         </div>
       </div>
       <div class="header-right">
+        ${state.user?.role === 'admin' ? '<button class="btn-dl blue" id="btnAdminPanel" style="margin-right:10px;">Painel Admin</button>' : ''}
         <span class="header-user">${state.user?.email || ''}</span>
         <button class="btn-logout" id="logoutBtn">Sair</button>
       </div>
@@ -211,7 +212,34 @@ function renderApp() {
         </div>
       </div>
 
-    </main>`;
+    </main>
+    
+    <!-- Admin Modal -->
+    <div id="adminModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+      <div class="modal-content" style="max-width: 600px; width: 100%; background: var(--bg); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; font-size: 18px;">👥 Painel de Usuários</h2>
+          <button id="closeAdminModalBtn" style="background: none; border: none; color: var(--text2); cursor: pointer; font-size: 20px;">✕</button>
+        </div>
+        
+        <div style="background: var(--bg-alt); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 20px;">
+          <h3 style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Adicionar Novo Usuário</h3>
+          <div style="display: flex; gap: 10px;">
+            <input type="email" id="newAdminEmail" class="form-input" placeholder="Email" style="flex: 1;" />
+            <input type="password" id="newAdminPassword" class="form-input" placeholder="Senha" style="width: 150px;" />
+            <button id="btnCreateUser" class="btn-dl green" style="padding: 8px 16px;">Criar</button>
+          </div>
+        </div>
+        
+        <h3 style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Usuários Cadastrados</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Email</th><th>Nível</th><th>Ações</th></tr></thead>
+            <tbody id="adminUserList"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
 
   // Events
   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
@@ -226,6 +254,14 @@ function renderApp() {
   
   document.getElementById('btnSearchJson').addEventListener('click', handleSearchJson);
   document.getElementById('btnCopyJson').addEventListener('click', copyJsonResult);
+
+  if (state.user?.role === 'admin') {
+    document.getElementById('btnAdminPanel').addEventListener('click', openAdminPanel);
+    document.getElementById('closeAdminModalBtn').addEventListener('click', () => {
+      document.getElementById('adminModal').style.display = 'none';
+    });
+    document.getElementById('btnCreateUser').addEventListener('click', createAdminUser);
+  }
 }
 
 async function handleLogout() {
@@ -524,3 +560,67 @@ function copyJsonResult() {
     toast('JSON copiado!', 'success');
   });
 }
+
+// ─── Admin Panel ──────────────────────────────────────────
+async function openAdminPanel() {
+  document.getElementById('adminModal').style.display = 'flex';
+  await loadAdminUsers();
+}
+
+async function loadAdminUsers() {
+  const tbody = document.getElementById('adminUserList');
+  tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Carregando...</td></tr>';
+  try {
+    const data = await apiFetch('/api/users/list');
+    tbody.innerHTML = '';
+    data.users.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${u.email}</td>
+        <td><span class="badge ${u.role === 'admin' ? 'blue' : 'green'}">${u.role}</span></td>
+        <td>
+          ${u.isMain ? '<span style="color:var(--text3);font-size:12px;">Mestre</span>' : 
+            `<button class="btn-clear" onclick="deleteAdminUser('${u.email}')" style="color: var(--danger); border: 1px solid var(--danger);">Excluir</button>`}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="3" style="color:var(--danger);">Erro: ${err.message}</td></tr>`;
+  }
+}
+
+async function createAdminUser() {
+  const email = document.getElementById('newAdminEmail').value.trim();
+  const password = document.getElementById('newAdminPassword').value;
+  if (!email || !password) { toast('Preencha email e senha', 'error'); return; }
+  
+  const btn = document.getElementById('btnCreateUser');
+  btn.disabled = true;
+  btn.textContent = '...';
+  
+  try {
+    await apiFetch('/api/users/create', { method: 'POST', body: { email, password } });
+    toast('Usuário criado com sucesso!', 'success');
+    document.getElementById('newAdminEmail').value = '';
+    document.getElementById('newAdminPassword').value = '';
+    await loadAdminUsers();
+  } catch (err) {
+    toast(err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Criar';
+  }
+}
+
+window.deleteAdminUser = async function(email) {
+  if (!confirm(`Tem certeza que deseja remover o acesso de ${email}?`)) return;
+  try {
+    await apiFetch('/api/users/delete', { method: 'POST', body: { email } });
+    toast('Usuário removido.', 'success');
+    await loadAdminUsers();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+

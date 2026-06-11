@@ -11,7 +11,8 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "@vercel/kv": "^3.0.0"
   },
   "devDependencies": {
     "vite": "^5.2.0"

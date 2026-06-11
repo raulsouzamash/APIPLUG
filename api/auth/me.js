@@ -5,8 +5,8 @@ module.exports = function handler(req, res) {
     return res.status(405).json({ error: 'Método não permitido' });
   }
   const payload = verifyAuth(req);
-  if (!payload) {
-    return res.status(401).json({ authenticated: false });
+  if (payload) {
+    return res.status(200).json({ authenticated: true, email: payload.email, role: payload.role });
   }
-  return res.status(200).json({ authenticated: true, email: payload.email });
+  return res.status(401).json({ authenticated: false });
 };
