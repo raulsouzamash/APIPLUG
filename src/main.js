@@ -165,6 +165,26 @@ function renderApp() {
         </div>
       </div>
 
+      <!-- Busca JSON -->
+      <div class="card">
+        <div class="card-label">🔎 Inspecionar Pedido (JSON Completo)</div>
+        <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
+          <select id="jsonSearchType" class="form-input" style="width: auto; max-width: 200px;">
+            <option value="external">ID Externo (ex: Shopee)</option>
+            <option value="internal">ID Pluggto</option>
+          </select>
+          <input type="text" id="jsonSearchValue" class="form-input" style="flex: 1; min-width: 200px;" placeholder="Digite o ID para ver o JSON..." />
+          <button class="btn-dl blue" id="btnSearchJson" style="padding: 10px 16px;">Buscar JSON</button>
+        </div>
+        <div id="jsonResultContainer" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 12px; font-weight: 600;">Resultado:</span>
+            <button class="btn-clear" id="btnCopyJson">Copiar JSON</button>
+          </div>
+          <pre id="jsonResultPre" style="background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px; font-size: 12px; max-height: 400px; overflow: auto; color: var(--accent);"></pre>
+        </div>
+      </div>
+
       <!-- Progresso -->
       <div class="card progress-card" id="progressCard">
         <div class="card-label" id="progressTitle">⏳ Processando...</div>
@@ -203,6 +223,9 @@ function renderApp() {
   document.getElementById('btnNfe').addEventListener('click', () => runAction('nfe'));
   document.getElementById('btnLabel').addEventListener('click', () => runAction('label'));
   document.getElementById('btnBoth').addEventListener('click', () => runAction('both'));
+  
+  document.getElementById('btnSearchJson').addEventListener('click', handleSearchJson);
+  document.getElementById('btnCopyJson').addEventListener('click', copyJsonResult);
 }
 
 async function handleLogout() {
@@ -459,4 +482,45 @@ async function downloadAllPdfs() {
     await sleep(700);
   }
   toast(`${withUrl.length} PDFs iniciados!`, 'success');
+}
+
+// ─── JSON Search ──────────────────────────────────────────
+async function handleSearchJson() {
+  const searchType = document.getElementById('jsonSearchType').value;
+  const searchValue = document.getElementById('jsonSearchValue').value.trim();
+  if (!searchValue) { toast('Digite o ID do pedido.', 'error'); return; }
+
+  const btn = document.getElementById('btnSearchJson');
+  btn.textContent = 'Buscando...';
+  btn.disabled = true;
+  document.getElementById('jsonResultContainer').style.display = 'none';
+
+  try {
+    const data = await apiFetch('/api/orders/json', {
+      method: 'POST',
+      body: { searchType, searchValue }
+    });
+    
+    document.getElementById('jsonResultPre').textContent = JSON.stringify(data.data, null, 2);
+    document.getElementById('jsonResultContainer').style.display = 'block';
+    toast('JSON carregado com sucesso!', 'success');
+  } catch (err) {
+    if (err.message.includes('Não autenticado')) {
+      toast('Sessão expirada.', 'error');
+      setTimeout(renderLogin, 1500);
+    } else {
+      toast('Erro: ' + err.message, 'error');
+    }
+  } finally {
+    btn.textContent = 'Buscar JSON';
+    btn.disabled = false;
+  }
+}
+
+function copyJsonResult() {
+  const text = document.getElementById('jsonResultPre').textContent;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    toast('JSON copiado!', 'success');
+  });
 }
