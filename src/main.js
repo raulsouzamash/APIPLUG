@@ -630,21 +630,52 @@ function copyJsonResult() {
 async function handleDownloadBuffered() {
   const btn = document.getElementById('btnDownloadBuffered');
   const originalText = btn.innerHTML;
-  btn.innerHTML = '⏳ Buscando na Pluggto (pode demorar)...';
   btn.disabled = true;
 
   try {
-    const data = await apiFetch('/api/orders/buffered');
+    let allOrders = [];
+    let page = 1;
+    let keepFetching = true;
     
-    if (!data.orders || data.orders.length === 0) {
-      toast('Nenhum agendamento pendente encontrado.', 'info');
+    // Calcula a data de 30 dias atrás
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    while (keepFetching) {
+      btn.innerHTML = `⏳ Buscando na Pluggto (página ${page} - últimos 30 dias)...`;
+      const data = await apiFetch(`/api/orders/buffered?page=${page}`);
+      
+      if (data.orders && data.orders.length > 0) {
+        allOrders.push(...data.orders);
+      }
+
+      // Verifica a data do último pedido retornado na página
+      if (data.lastOrderDate) {
+        const lastDate = new Date(data.lastOrderDate);
+        if (lastDate < thirtyDaysAgo) {
+          keepFetching = false; // Parar de buscar pois já passamos de 30 dias
+        }
+      }
+
+      // Se não tem mais páginas na Pluggto
+      if (!data.hasMore) {
+        keepFetching = false;
+      }
+
+      if (keepFetching) {
+        page++;
+      }
+    }
+
+    if (allOrders.length === 0) {
+      toast('Nenhum agendamento pendente encontrado nos últimos 30 dias.', 'info');
       return;
     }
 
-    toast(`Gerando planilha com ${data.orders.length} agendamentos...`, 'success');
+    toast(`Gerando planilha com ${allOrders.length} agendamentos...`, 'success');
     
     const wsData = [['ID Interno', 'ID Externo', 'Status', 'Sub-status', 'Data Agendamento (Buffering)', 'Previsão de Coleta', 'Transportadora', 'Método']];
-    data.orders.forEach(o => {
+    allOrders.forEach(o => {
       wsData.push([
         o.id, 
         o.external, 
