@@ -204,6 +204,11 @@ function renderApp() {
           <div class="dl-btns" id="dlBtns"></div>
         </div>
         <div class="stats-row" id="statsRow"></div>
+        
+        <div style="margin-bottom: 12px; display: none;" id="filterContainer">
+          <input type="text" id="filterNfInput" class="form-input" placeholder="🔍 Buscar por Nº da NF ou ID do Pedido..." style="max-width: 320px;" />
+        </div>
+
         <div class="table-wrap">
           <table>
             <thead><tr id="tableHead"></tr></thead>
@@ -425,7 +430,11 @@ function renderResults(mode) {
   if (withLbl > 0) {
     const b = document.createElement('button');
     b.className = 'btn-dl orange'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
-    b.onclick = downloadAllPdfs; dlBtns.appendChild(b);
+    b.onclick = () => downloadAllPdfs(false); dlBtns.appendChild(b);
+
+    const p = document.createElement('button');
+    p.className = 'btn-dl blue'; p.style.marginLeft = '8px'; p.innerHTML = `🖨️ Imprimir Etiquetas`;
+    p.onclick = () => downloadAllPdfs(true); dlBtns.appendChild(p);
   }
 
   // Table head
@@ -455,6 +464,20 @@ function renderResults(mode) {
     tr.innerHTML = cols;
     tbody.appendChild(tr);
   });
+
+  const filterContainer = document.getElementById('filterContainer');
+  filterContainer.style.display = 'block';
+  
+  const filterInput = document.getElementById('filterNfInput');
+  filterInput.value = '';
+  filterInput.oninput = function() {
+    const term = this.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#tableBody tr');
+    rows.forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(term) ? '' : 'none';
+    });
+  };
 
   card.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -503,7 +526,7 @@ function downloadLabelsXlsx() {
   toast('XLSX de Etiquetas baixado!');
 }
 
-async function downloadAllPdfs() {
+async function downloadAllPdfs(autoPrint = false) {
   const validOrders = state.results.filter(r => r.orderId && r.labelUrl);
   if (!validOrders.length) { toast('Nenhuma etiqueta disponível.', 'error'); return; }
   
@@ -521,10 +544,32 @@ async function downloadAllPdfs() {
       return;
     }
 
-    toast(`Pronto! Abrindo ${data.urls.length} PDF(s) unificado(s)...`, 'success');
+    toast(`Pronto! Carregando arquivo(s) unificado(s)...`, 'success');
     for (const url of data.urls) {
-      // Abre o PDF consolidado em uma nova aba para o navegador não bloquear o download
-      window.open(url, '_blank');
+      if (autoPrint) {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const blobUrl = URL.createObjectURL(blob);
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = blobUrl;
+          document.body.appendChild(iframe);
+          iframe.onload = () => {
+            iframe.contentWindow.print();
+            setTimeout(() => {
+               // Cleanup
+               document.body.removeChild(iframe);
+               URL.revokeObjectURL(blobUrl);
+            }, 60000);
+          };
+        } catch (e) {
+          toast('Bloqueio de segurança. Imprima manualmente (Ctrl+P).', 'warning');
+          window.open(url, '_blank');
+        }
+      } else {
+        window.open(url, '_blank');
+      }
       await sleep(500);
     }
   } catch (err) {
