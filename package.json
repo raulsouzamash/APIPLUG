@@ -1,0 +1,19 @@
+{
+  "name": "pluggto-tools",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "generate-hash": "node scripts/generate-hash.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}
