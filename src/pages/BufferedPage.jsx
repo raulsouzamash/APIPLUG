@@ -13,7 +13,7 @@ export default function BufferedPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterDate, setFilterDate] = useState('');
-  const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || '');
+  const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || 'https://sheetdb.io/api/v1/qzli5h96oqz4z');
   const [syncing, setSyncing] = useState(false);
 
   const fetchBuffered = async () => {
@@ -132,15 +132,22 @@ export default function BufferedPage() {
     }));
 
     try {
-      await fetch(sheetUrl, {
+      const response = await fetch(sheetUrl, {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ data: payload })
       });
+      
+      if (!response.ok) {
+        throw new Error('Erro na resposta do SheetDB');
+      }
+      
       toast.success('Dados enviados para a planilha!');
     } catch (e) {
-      toast.error('Erro ao sincronizar. Verifique a URL do Apps Script.');
+      toast.error('Erro ao sincronizar com a planilha.');
     } finally {
       setSyncing(false);
     }
