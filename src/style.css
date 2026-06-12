@@ -3,63 +3,60 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 147 82% 36%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 147 82% 36%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 147 82% 36%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 147 82% 36%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
   body {
-    @apply bg-[#0B1120] text-slate-200 antialiased font-sans transition-colors duration-300;
-    background-image: radial-gradient(circle at 50% -20%, rgba(16, 169, 88, 0.08), transparent 60%);
+    @apply bg-background text-foreground antialiased font-sans;
   }
 }
-
-@layer components {
-  .glass-panel {
-    @apply bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 shadow-2xl rounded-2xl;
-  }
-  
-  .glass-card {
-    @apply bg-slate-800/40 backdrop-blur-md border border-slate-700/50 shadow-lg rounded-xl hover:shadow-xl hover:border-pluggto/40 transition-all duration-300;
-  }
-  
-  .btn-primary {
-    @apply bg-pluggto hover:bg-pluggtodark text-white font-semibold py-2.5 px-5 rounded-lg shadow-[0_0_15px_rgba(16,169,88,0.3)] hover:shadow-[0_0_25px_rgba(16,169,88,0.5)] transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pluggto focus:ring-opacity-50;
-  }
-  
-  .btn-secondary {
-    @apply bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-600 font-semibold py-2 px-4 rounded-lg shadow hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500;
-  }
-  
-  .btn-danger {
-    @apply bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-semibold py-1.5 px-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50;
-  }
-  
-  .input-field {
-    @apply w-full px-4 py-2.5 bg-slate-900/50 border border-slate-700 text-slate-100 rounded-lg focus:bg-slate-800 focus:border-pluggto focus:ring-2 focus:ring-pluggto/30 transition-all duration-200 outline-none placeholder-slate-500 shadow-inner;
-  }
-  
-  .label-text {
-    @apply block font-semibold text-slate-400 mb-1.5 uppercase tracking-wider text-xs;
-  }
-}
-
-/* Toast Animations */
-.toast-enter {
-  animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-@keyframes toastIn {
-  0% { transform: translateX(100%) scale(0.9); opacity: 0; }
-  100% { transform: translateX(0) scale(1); opacity: 1; }
-}
-
-#toast-container {
-  @apply fixed bottom-5 right-5 z-50 flex flex-col gap-3;
-}
-
-.toast {
-  @apply glass-panel px-4 py-3 flex items-center gap-3 text-sm font-medium shadow-lg max-w-sm toast-enter;
-}
-
-.toast.success { @apply border-l-4 border-l-pluggto; }
-.toast.error { @apply border-l-4 border-l-red-500; }
-.toast.info { @apply border-l-4 border-l-blue-500; }
 
 /* Custom Scrollbar for Textarea/Pre */
 ::-webkit-scrollbar {
@@ -71,9 +68,4 @@
 }
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-600 rounded-full hover:bg-slate-500 transition-colors;
-}
-
-/* Loading Spinner */
-.spinner {
-  @apply inline-block w-5 h-5 border-2 border-pluggto/30 border-t-pluggto rounded-full animate-spin;
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,20 +8,9 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/src/style.css" />
 </head>
-<body class="bg-[#0B1120] text-slate-200 min-h-screen relative overflow-x-hidden selection:bg-pluggto selection:text-white font-sans">
-  <!-- Efeitos de Fundo (Glassmorphism blobs) -->
-  <div class="fixed top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-pluggto/10 blur-[140px] pointer-events-none"></div>
-  <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px] pointer-events-none"></div>
-
-  <div id="app" class="relative z-10 max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 min-h-screen flex flex-col">
-    <!-- Renderizado dinamicamente pelo main.js -->
-    <div class="splash">
-      <div class="splash-spinner"></div>
-    </div>
-  </div>
-  <div id="toast-container"></div>
-  <script type="module" src="/src/main.js"></script>
+<body class="min-h-screen relative overflow-x-hidden selection:bg-primary selection:text-primary-foreground font-sans bg-background">
+  <div id="app"></div>
+  <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
