@@ -717,33 +717,19 @@ async function handleDownloadBuffered() {
     let allOrders = [];
     let page = 1;
     let keepFetching = true;
-    
-    // Calcula a data de 30 dias atrás
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     while (keepFetching) {
-      btn.innerHTML = `⏳ Buscando na Pluggto (página ${page} - últimos 30 dias)...`;
+      btn.innerHTML = `⏳ Buscando na Pluggto (página ${page})...`;
       const data = await apiFetch(`/api/orders/buffered?page=${page}`);
       
       if (data.orders && data.orders.length > 0) {
         allOrders.push(...data.orders);
       }
 
-      // Verifica a data do último pedido retornado na página
-      // Verifica a data do último pedido retornado na página
-      if (data.lastOrderDate) {
-        const lastDate = new Date(data.lastOrderDate);
-        // Desativamos a trava de 30 dias porque se a API ordenar do mais antigo pro mais novo,
-        // o lastDate da página 1 será de anos atrás e vai cancelar a busca inteira imediatamente!
-      }
-
-      // Limite de segurança: buscar no máximo 50 páginas (5000 pedidos)
       if (page >= 50) {
         keepFetching = false;
       }
 
-      // Se não tem mais páginas na Pluggto
       if (!data.hasMore) {
         keepFetching = false;
       }
@@ -754,23 +740,43 @@ async function handleDownloadBuffered() {
     }
 
     if (allOrders.length === 0) {
-      toast('Nenhum agendamento pendente encontrado nos últimos 30 dias.', 'info');
+      toast('Nenhum agendamento pendente encontrado.', 'info');
+      btn.innerHTML = originalText;
+      btn.disabled = false;
       return;
+    }
+
+    // Mostrar os resultados na tela
+    const card = document.getElementById('bufferedResultsCard');
+    const tbody = document.getElementById('bufferedTableBody');
+    const countEl = document.getElementById('bufferedTotalCount');
+    
+    if(card && tbody && countEl) {
+      card.classList.remove('hidden');
+      countEl.textContent = allOrders.length;
+      
+      tbody.innerHTML = allOrders.map(o => {
+        return `
+          <tr class="hover:bg-slate-800/30 transition-colors">
+            <td class="px-4 py-3 font-mono text-slate-300">${o.id || 'N/A'}</td>
+            <td class="px-4 py-3 font-mono text-slate-300">${o.original_id || o.external || 'N/A'}</td>
+            <td class="px-4 py-3">${statusBadge(o.status)}</td>
+            <td class="px-4 py-3 text-pluggto font-medium">${o.buffering_date || '-'}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     toast(`Gerando planilha com ${allOrders.length} agendamentos...`, 'success');
     
-    const wsData = [['ID Interno', 'ID Externo', 'Status', 'Sub-status', 'Data Agendamento (Buffering)', 'Previsão de Coleta', 'Transportadora', 'Método']];
+    const wsData = [['ID Interno', 'ID Externo', 'Status', 'Data Agendamento (Buffering)', 'Data Criacao Pedido']];
     allOrders.forEach(o => {
       wsData.push([
-        o.id, 
-        o.external, 
-        o.status, 
-        o.sub_status || '',
-        o.buffering_date ? new Date(o.buffering_date).toLocaleString('pt-BR') : '',
-        o.expected_collection_date && o.expected_collection_date !== 'N/A' ? new Date(o.expected_collection_date).toLocaleString('pt-BR') : o.expected_collection_date,
-        o.shipping_company,
-        o.shipping_method
+        o.id,
+        o.original_id || o.external || 'N/A',
+        o.status,
+        o.buffering_date || '',
+        o.created || ''
       ]);
     });
 
