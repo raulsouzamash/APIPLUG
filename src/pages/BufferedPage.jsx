@@ -29,6 +29,10 @@ export default function BufferedPage() {
         toast.warning('Nenhum agendamento encontrado.');
       } else {
         toast.success(`${data.length} agendamentos encontrados!`);
+        // Sincroniza automaticamente após a busca, sem precisar clicar
+        if (sheetUrl) {
+          syncGoogleSheets(data);
+        }
       }
     } catch (e) {
       toast.error(e.message || 'Erro ao buscar agendamentos');
@@ -114,40 +118,76 @@ export default function BufferedPage() {
     return new Date(dateStr).toLocaleDateString('pt-BR');
   };
 
-  const syncGoogleSheets = async () => {
+  const syncGoogleSheets = async (dataToSync = results) => {
     if (!sheetUrl) {
       toast.error('Cole a URL do Google Sheets primeiro!');
       return;
     }
     setSyncing(true);
-    toast.info('Sincronizando com Google Sheets...');
-
-    const payload = results.map(r => ({
-      id: r.id || '',
-      ext: r.ext || '',
-      status: r.status || '',
-      calculated_status: getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado',
-      created: r.created ? new Date(r.created).toLocaleDateString('pt-BR') : '',
-      buffering_date: r.buffering_date ? new Date(r.buffering_date).toLocaleDateString('pt-BR') : ''
-    }));
+    toast.info('Sincronizando agendamentos...');
 
     try {
-      const response = await fetch(sheetUrl, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ data: payload })
-      });
+      // 1. Busca os dados que já existem na planilha
+      const existingRes = await fetch(sheetUrl);
+      if (!existingRes.ok) throw new Error('Falha ao buscar dados antigos');
+      const existingData = await existingRes.json();
       
-      if (!response.ok) {
-        throw new Error('Erro na resposta do SheetDB');
+      const existingMap = new Map();
+      existingData.forEach(row => existingMap.set(row.id, row));
+
+      const toCreate = [];
+      const toUpdate = [];
+
+      dataToSync.forEach(r => {
+        const calculated = getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado';
+        const formattedDate = r.buffering_date ? new Date(r.buffering_date).toLocaleDateString('pt-BR') : '';
+        const createdDate = r.created ? new Date(r.created).toLocaleDateString('pt-BR') : '';
+        
+        const payload = {
+          id: r.id || '',
+          ext: r.ext || '',
+          status: r.status || '',
+          calculated_status: calculated,
+          created: createdDate,
+          buffering_date: formattedDate
+        };
+
+        const existingRow = existingMap.get(payload.id);
+        
+        if (!existingRow) {
+          // É novo, vamos inserir
+          toCreate.push(payload);
+        } else {
+          // Já existe, vamos verificar se mudou o status
+          if (existingRow.status !== payload.status || existingRow.calculated_status !== payload.calculated_status) {
+            toUpdate.push(payload);
+          }
+        }
+      });
+
+      // 2. Insere os novos todos de uma vez (Bulk POST)
+      if (toCreate.length > 0) {
+        await fetch(sheetUrl, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: toCreate })
+        });
+      }
+
+      // 3. Atualiza os que mudaram (PATCH individual para cada um alterado)
+      // Fazemos isso em série para não sobrecarregar a API
+      for (const update of toUpdate) {
+        await fetch(`${sheetUrl}/id/${update.id}`, {
+          method: 'PATCH',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: update })
+        });
       }
       
-      toast.success('Dados enviados para a planilha!');
+      toast.success(`Sincronização concluída! ${toCreate.length} novos, ${toUpdate.length} atualizados.`);
     } catch (e) {
       toast.error('Erro ao sincronizar com a planilha.');
+      console.error(e);
     } finally {
       setSyncing(false);
     }
@@ -210,7 +250,7 @@ export default function BufferedPage() {
             <Button
               variant="outline"
               className="gap-2 border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 whitespace-nowrap"
-              onClick={syncGoogleSheets}
+              onClick={() => syncGoogleSheets(results)}
               disabled={syncing || results.length === 0}
             >
               {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
