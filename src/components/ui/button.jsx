@@ -4,15 +4,15 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md text-base font-semibold transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-indigo-500 text-white hover:bg-indigo-400 focus-visible:outline-indigo-500",
+        default: "bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] hover:bg-indigo-400 focus-visible:outline-indigo-500",
         destructive:
-          "bg-red-500 text-white hover:bg-red-400 focus-visible:outline-red-500",
+          "bg-red-500 text-white hover:bg-red-400 focus-visible:outline-red-500 shadow-md",
         outline:
-          "bg-white/10 text-white hover:bg-white/20 ring-1 ring-inset ring-white/20",
+          "bg-white/5 text-white hover:bg-white/10 ring-1 ring-inset ring-white/10 hover:ring-white/20",
         secondary:
           "bg-white/10 text-white hover:bg-white/20",
         ghost: "shadow-none hover:bg-white/10 text-gray-300 hover:text-white",
