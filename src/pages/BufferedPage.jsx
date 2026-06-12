@@ -20,7 +20,8 @@ export default function BufferedPage() {
     toast.info('Buscando agendamentos...');
 
     try {
-      const { data } = await apiFetch('/api/orders/buffered', { method: 'POST' });
+      const response = await apiFetch('/api/orders/buffered');
+      const data = response.orders || [];
       setResults(data);
       if (data.length === 0) {
         toast.warning('Nenhum agendamento encontrado.');
