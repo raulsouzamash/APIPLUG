@@ -17,8 +17,8 @@ module.exports = async function handler(req, res) {
     const token = await getPluggtoToken();
 
     // Busca apenas 1 página por vez para não dar timeout, a paginação será controlada pelo Frontend
-    // Removendo o filtro restrito de status para garantir que encontraremos agendamentos mesmo se o status na pluggto estiver como 'pending'
-    const resp = await fetch(`${API_BASE}/orders?limit=100&page=${page}&sort_order=desc`, {
+    // Restaurando o filtro de status (incluindo pending) para evitar que a busca seja inundada por milhares de pedidos 'delivered' recentes
+    const resp = await fetch(`${API_BASE}/orders?status=pending,approved,shipping_informed,buffered&limit=100&page=${page}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
