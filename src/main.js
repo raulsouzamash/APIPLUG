@@ -246,6 +246,30 @@ function renderApp() {
         </div>
       </div>
 
+      <!-- Resultados Agendamentos -->
+      <div class="glass-card p-6 hidden animate-fade-in" id="bufferedResultsCard">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700/50 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">📅 Agendamentos Encontrados</h2>
+        </div>
+        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl mb-6 text-center w-full max-w-xs">
+          <div class="text-2xl font-bold text-white" id="bufferedTotalCount">0</div>
+          <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Total Encontrados</div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
+              <tr>
+                <th class="px-4 py-3">ID Interno</th>
+                <th class="px-4 py-3">ID Externo</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Data Agendamento</th>
+              </tr>
+            </thead>
+            <tbody id="bufferedTableBody" class="divide-y divide-slate-700/50"></tbody>
+          </table>
+        </div>
+      </div>
+
     </main>
     
     <!-- Admin Modal -->
@@ -444,7 +468,7 @@ function statusBadge(status) {
 function renderResults(mode) {
   const res = state.results;
   const card = document.getElementById('resultsCard');
-  card.classList.add('visible');
+  card.classList.remove('hidden');
 
   // Stats
   const total    = res.length;
