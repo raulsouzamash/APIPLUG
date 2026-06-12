@@ -116,195 +116,216 @@ async function handleLogin(e) {
 // ─── App Page ─────────────────────────────────────────────
 function renderApp() {
   document.getElementById('app').innerHTML = `
-    <header class="flex items-center justify-between mb-8 pb-6 border-b border-slate-700/50 animate-slide-up">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pluggto to-blue-500 flex items-center justify-center text-xl shadow-lg shadow-pluggto/20">📦</div>
-        <div>
-          <h1 class="text-xl font-bold text-white leading-tight">Pluggto Tools</h1>
-          <small class="text-xs text-slate-400 font-medium">Chaves NFe & Etiquetas</small>
+    <!-- Top Navigation Bar -->
+    <header class="bg-white border-b border-slate-200 shadow-sm mb-6 animate-slide-up sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <div class="flex-shrink-0 flex items-center gap-3 mr-8">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-pluggto to-green-500 flex items-center justify-center text-white font-bold shadow-md">P</div>
+              <span class="font-bold text-lg text-slate-800 hidden sm:block">Pluggto Tools</span>
+            </div>
+            <div class="hidden sm:flex sm:space-x-8" id="navMenu">
+              <button data-page="page-nfe" class="nav-tab active-tab border-pluggto text-slate-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">NFe & Etiquetas</button>
+              <button data-page="page-agendamentos" class="nav-tab border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">Agendamentos</button>
+              <button data-page="page-json" class="nav-tab border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">Inspecionar JSON</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            ${state.user?.role === 'admin' ? '<button class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold py-1.5 px-3 rounded-md transition-colors" id="btnAdminPanel">Admin</button>' : ''}
+            <span class="text-sm font-medium text-slate-500 hidden md:inline-block">${state.user?.email || ''}</span>
+            <button class="text-slate-400 hover:text-red-500 text-sm font-medium transition-colors" id="logoutBtn">Sair</button>
+          </div>
         </div>
       </div>
-      <div class="flex items-center gap-4">
-        ${state.user?.role === 'admin' ? '<button class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-semibold py-1.5 px-3 rounded-md transition-colors" id="btnAdminPanel">Painel Admin</button>' : ''}
-        <span class="text-sm font-medium text-slate-300 hidden sm:inline-block">${state.user?.email || ''}</span>
-        <button class="text-slate-400 hover:text-white text-sm font-medium transition-colors" id="logoutBtn">Sair</button>
+      <!-- Mobile menu -->
+      <div class="sm:hidden flex overflow-x-auto border-t border-slate-100" id="navMenuMobile">
+        <button data-page="page-nfe" class="nav-tab-mobile active-tab-mobile border-pluggto text-pluggto whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">NFe & Etiquetas</button>
+        <button data-page="page-agendamentos" class="nav-tab-mobile border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">Agendamentos</button>
+        <button data-page="page-json" class="nav-tab-mobile border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">Inspecionar JSON</button>
       </div>
     </header>
 
-    <main class="flex flex-col gap-6 animate-slide-up" style="animation-delay: 0.1s;">
-
-      <!-- IDs dos pedidos -->
-      <div class="glass-card p-6">
-        <div class="flex items-center gap-2 mb-4">
-          <div class="w-6 h-6 rounded-full bg-pluggto/20 text-pluggto flex items-center justify-center text-xs font-bold border border-pluggto/30">1</div>
-          <h2 class="text-base font-semibold text-white">Cole os IDs dos Pedidos</h2>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 animate-slide-up" style="animation-delay: 0.1s;">
+      
+      <!-- Progresso Global -->
+      <div class="glass-card p-6 hidden mb-6" id="progressCard">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="spinner" style="border-color: #cbd5e1; border-top-color: #10A958;"></span>
+          <h2 class="text-base font-semibold text-slate-800" id="progressTitle">Processando...</h2>
         </div>
-        <textarea id="orderInput" class="input-field min-h-[120px] font-mono text-sm leading-relaxed"
-          placeholder="Cole os IDs dos pedidos, um por linha:
+        <div class="flex justify-between text-sm font-medium mb-2">
+          <span class="text-slate-600" id="progLabel">Iniciando...</span>
+          <span class="text-pluggto font-bold" id="progFrac">0 / 0</span>
+        </div>
+        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden mb-3 border border-slate-200">
+          <div class="bg-pluggto h-full w-0 transition-all duration-300" id="progFill"></div>
+        </div>
+        <div class="text-sm text-slate-500" id="progStatus">Aguarde...</div>
+      </div>
+
+      <!-- ================= PAGE 1: NFe & Etiquetas ================= -->
+      <div id="page-nfe" class="page-section flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- IDs dos pedidos -->
+          <div class="glass-card p-6 lg:p-8">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-8 h-8 rounded-full bg-pluggto/10 text-pluggto flex items-center justify-center font-bold border border-pluggto/20">1</div>
+              <h2 class="text-lg font-bold text-slate-800">Cole os IDs dos Pedidos</h2>
+            </div>
+            <textarea id="orderInput" class="input-field min-h-[160px] font-mono text-base leading-relaxed"
+              placeholder="Cole os IDs dos pedidos, um por linha:
 260610Q971GUG0
 260610Q5SMJKD0
 ..."></textarea>
-        <div class="flex items-center justify-between mt-3">
-          <div class="text-xs font-medium text-pluggto bg-pluggto/10 border border-pluggto/20 py-1 px-3 rounded-full">
-            <b id="orderCount">0</b> pedidos detectados
-          </div>
-          <button class="text-xs font-medium text-slate-400 hover:text-white transition-colors" id="clearBtn">✕ Limpar</button>
-        </div>
-      </div>
-
-      <!-- Ações -->
-      <div class="glass-card p-6">
-        <div class="flex items-center gap-2 mb-4">
-          <div class="w-6 h-6 rounded-full bg-pluggto/20 text-pluggto flex items-center justify-center text-xs font-bold border border-pluggto/30">2</div>
-          <h2 class="text-base font-semibold text-white">Escolha a Ação</h2>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <button class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-700/80 hover:border-pluggto/50 transition-all group" id="btnNfe">
-            <span class="text-3xl group-hover:scale-110 transition-transform">🔑</span>
-            <span class="font-semibold text-sm text-white">Buscar Chaves NFe</span>
-            <span class="text-xs text-slate-400 text-center">Exporta XLSX com chaves</span>
-          </button>
-          <button class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-700/80 hover:border-pluggto/50 transition-all group" id="btnLabel">
-            <span class="text-3xl group-hover:scale-110 transition-transform">🏷️</span>
-            <span class="font-semibold text-sm text-white">Baixar Etiquetas</span>
-            <span class="text-xs text-slate-400 text-center">Links das etiquetas</span>
-          </button>
-          <button class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-pluggto/30 bg-pluggto/10 hover:bg-pluggto/20 hover:border-pluggto/60 transition-all group shadow-lg shadow-pluggto/5" id="btnBoth">
-            <span class="text-3xl group-hover:scale-110 transition-transform">⚡</span>
-            <span class="font-semibold text-sm text-pluggto">Ambos</span>
-            <span class="text-xs text-slate-400 text-center">NFe + Etiquetas</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Busca de Agendamentos -->
-      <div class="glass-card p-6 border-l-4 border-l-blue-500">
-        <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-1">📅 Exportar Agendamentos Pendentes</h2>
-        <p class="text-sm text-slate-400 mb-4">Busca e exporta planilha com todos os pedidos que não foram enviados e possuem "buffering_date".</p>
-        <button class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors w-full sm:w-auto" id="btnDownloadBuffered">⬇ Baixar Agendamentos (.xlsx)</button>
-      </div>
-
-      <!-- Busca JSON -->
-      <div class="glass-card p-6">
-        <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-4">🔎 Inspecionar Pedido (JSON Completo)</h2>
-        <div class="flex flex-col sm:flex-row gap-3 mb-4">
-          <select id="jsonSearchType" class="input-field sm:max-w-[200px]">
-            <option value="external">ID Externo (ex: Shopee)</option>
-            <option value="internal">ID Pluggto</option>
-          </select>
-          <input type="text" id="jsonSearchValue" class="input-field flex-1" placeholder="Digite o ID para ver o JSON..." />
-          <button class="btn-primary" id="btnSearchJson">Buscar JSON</button>
-        </div>
-        <div id="jsonResultContainer" class="hidden">
-          <div class="flex justify-between items-center mb-2">
-            <span class="text-xs font-semibold text-slate-400">Resultado:</span>
-            <button class="text-xs text-pluggto hover:text-white transition-colors" id="btnCopyJson">Copiar JSON</button>
-          </div>
-          <pre id="jsonResultPre" class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-xs font-mono text-pluggto max-h-96 overflow-auto"></pre>
-        </div>
-      </div>
-
-      <!-- Progresso -->
-      <div class="glass-card p-6 hidden" id="progressCard">
-        <div class="flex items-center gap-2 mb-4">
-          <span class="spinner"></span>
-          <h2 class="text-base font-semibold text-white" id="progressTitle">Processando...</h2>
-        </div>
-        <div class="flex justify-between text-sm font-medium mb-2">
-          <span class="text-slate-300" id="progLabel">Iniciando...</span>
-          <span class="text-pluggto" id="progFrac">0 / 0</span>
-        </div>
-        <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden mb-3">
-          <div class="bg-pluggto h-full w-0 transition-all duration-300 shadow-[0_0_10px_#10A958]" id="progFill"></div>
-        </div>
-        <div class="text-xs text-slate-400" id="progStatus">Aguarde...</div>
-      </div>
-
-      <!-- Resultados -->
-      <div class="glass-card p-6 hidden animate-fade-in" id="resultsCard">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700/50 pb-4">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">📊 Resultados</h2>
-          <div class="flex gap-2" id="dlBtns"></div>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6" id="statsRow"></div>
-        
-        <div class="mb-4 hidden" id="filterContainer">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span class="text-slate-400">🔍</span>
+            <div class="flex items-center justify-between mt-4">
+              <div class="text-sm font-medium text-pluggto bg-pluggto/10 border border-pluggto/20 py-1.5 px-4 rounded-full">
+                <b id="orderCount">0</b> pedidos
+              </div>
+              <button class="text-sm font-semibold text-slate-400 hover:text-slate-700 transition-colors" id="clearBtn">✕ Limpar</button>
             </div>
-            <input type="text" id="filterNfInput" class="input-field pl-10 max-w-sm" placeholder="Buscar por Nº NF ou ID..." />
+          </div>
+
+          <!-- Ações -->
+          <div class="glass-card p-6 lg:p-8">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-8 h-8 rounded-full bg-pluggto/10 text-pluggto flex items-center justify-center font-bold border border-pluggto/20">2</div>
+              <h2 class="text-lg font-bold text-slate-800">Escolha a Ação</h2>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[160px]">
+              <button class="flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-pluggto/50 hover:shadow-md transition-all group" id="btnNfe">
+                <span class="text-4xl group-hover:scale-110 transition-transform">🔑</span>
+                <span class="font-bold text-slate-700">Buscar Chaves</span>
+              </button>
+              <button class="flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-pluggto/50 hover:shadow-md transition-all group" id="btnLabel">
+                <span class="text-4xl group-hover:scale-110 transition-transform">🏷️</span>
+                <span class="font-bold text-slate-700">Baixar Etiquetas</span>
+              </button>
+              <button class="sm:col-span-2 flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-pluggto/30 bg-pluggto/5 hover:bg-pluggto/10 hover:border-pluggto transition-all group shadow-sm" id="btnBoth">
+                <span class="text-2xl group-hover:scale-110 transition-transform">⚡</span>
+                <span class="font-bold text-pluggto text-lg">Ambos (NFe + Etiquetas)</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
-              <tr id="tableHead"></tr>
-            </thead>
-            <tbody id="tableBody" class="divide-y divide-slate-700/50"></tbody>
-          </table>
+        <!-- Resultados -->
+        <div class="glass-card p-6 lg:p-8 hidden animate-fade-in" id="resultsCard">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-4">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📊 Resultados</h2>
+            <div class="flex gap-2" id="dlBtns"></div>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8" id="statsRow"></div>
+          
+          <div class="mb-6 hidden" id="filterContainer">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <span class="text-slate-400">🔍</span>
+              </div>
+              <input type="text" id="filterNfInput" class="input-field pl-12 max-w-md" placeholder="Buscar por Nº NF ou ID..." />
+            </div>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+              <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                <tr id="tableHead"></tr>
+              </thead>
+              <tbody id="tableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <!-- Resultados Agendamentos -->
-      <div class="glass-card p-6 hidden animate-fade-in" id="bufferedResultsCard">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700/50 pb-4">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">📅 Agendamentos Encontrados</h2>
+      <!-- ================= PAGE 2: Agendamentos ================= -->
+      <div id="page-agendamentos" class="page-section flex flex-col gap-6 hidden">
+        <div class="glass-card p-6 lg:p-8 border-l-4 border-l-blue-500 bg-blue-50/30">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-2">📅 Exportar Agendamentos Pendentes</h2>
+          <p class="text-base text-slate-600 mb-6">Busca e exporta uma planilha com todos os pedidos dos últimos 30 dias que não foram enviados e possuem "buffering_date" definido.</p>
+          <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors w-full sm:w-auto text-base" id="btnDownloadBuffered">⬇ Baixar Agendamentos (.xlsx)</button>
         </div>
-        
-        <div class="flex flex-col sm:flex-row gap-4 mb-6">
-          <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl text-center w-full sm:w-auto min-w-[150px]">
-            <div class="text-2xl font-bold text-white" id="bufferedTotalCount">0</div>
-            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Total Encontrados</div>
+
+        <!-- Resultados Agendamentos -->
+        <div class="glass-card p-6 lg:p-8 hidden animate-fade-in" id="bufferedResultsCard">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-4">
+            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📅 Agendamentos Encontrados</h2>
           </div>
           
-          <div class="flex-1 flex flex-col justify-center">
-            <label class="label-text">Filtrar por Agendamento:</label>
-            <input type="date" id="filterBufferedDate" class="input-field max-w-xs" />
+          <div class="flex flex-col sm:flex-row gap-6 mb-8">
+            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl text-center w-full sm:w-auto min-w-[160px] shadow-sm">
+              <div class="text-3xl font-black text-slate-800" id="bufferedTotalCount">0</div>
+              <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Total Encontrados</div>
+            </div>
+            
+            <div class="flex-1 flex flex-col justify-center max-w-sm">
+              <label class="label-text">Filtrar por Dia de Agendamento:</label>
+              <input type="date" id="filterBufferedDate" class="input-field" />
+            </div>
+          </div>
+
+          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+              <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th class="px-5 py-4">ID Interno</th>
+                  <th class="px-5 py-4">ID Externo</th>
+                  <th class="px-5 py-4">Status</th>
+                  <th class="px-5 py-4">Data Criação</th>
+                  <th class="px-5 py-4">Data Agendamento</th>
+                </tr>
+              </thead>
+              <tbody id="bufferedTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
           </div>
         </div>
+      </div>
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
-              <tr>
-                <th class="px-4 py-3">ID Interno</th>
-                <th class="px-4 py-3">ID Externo</th>
-                <th class="px-4 py-3">Status</th>
-                <th class="px-4 py-3">Data Criação</th>
-                <th class="px-4 py-3">Data Agendamento</th>
-              </tr>
-            </thead>
-            <tbody id="bufferedTableBody" class="divide-y divide-slate-700/50"></tbody>
-          </table>
+      <!-- ================= PAGE 3: Inspecionar JSON ================= -->
+      <div id="page-json" class="page-section flex flex-col gap-6 hidden">
+        <div class="glass-card p-6 lg:p-8">
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-6">🔎 Inspecionar Pedido (JSON Completo)</h2>
+          <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <select id="jsonSearchType" class="input-field sm:max-w-[220px]">
+              <option value="external">ID Externo (ex: Shopee)</option>
+              <option value="internal">ID Pluggto</option>
+            </select>
+            <input type="text" id="jsonSearchValue" class="input-field flex-1" placeholder="Digite o ID para ver o JSON completo retornado pela API..." />
+            <button class="btn-primary py-3 px-8 text-base" id="btnSearchJson">Buscar JSON</button>
+          </div>
+          <div id="jsonResultContainer" class="hidden">
+            <div class="flex justify-between items-center mb-3">
+              <span class="text-sm font-bold text-slate-600">Resultado da Busca:</span>
+              <button class="text-sm font-semibold text-pluggto hover:text-green-700 transition-colors" id="btnCopyJson">📋 Copiar JSON</button>
+            </div>
+            <pre id="jsonResultPre" class="bg-slate-800 border border-slate-700 rounded-xl p-6 text-sm font-mono text-green-400 max-h-[600px] overflow-auto shadow-inner"></pre>
+          </div>
         </div>
       </div>
 
     </main>
     
     <!-- Admin Modal -->
-    <div id="adminModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4 animate-fade-in">
-      <div class="glass-panel w-full max-w-2xl p-6 relative overflow-hidden">
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4 animate-fade-in">
+      <div class="glass-panel w-full max-w-2xl p-8 relative overflow-hidden bg-white">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-lg font-bold text-white flex items-center gap-2">👥 Painel de Usuários</h2>
-          <button id="closeAdminModalBtn" class="text-slate-400 hover:text-white text-xl transition-colors">✕</button>
+          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">👥 Painel de Usuários</h2>
+          <button id="closeAdminModalBtn" class="text-slate-400 hover:text-slate-800 text-2xl transition-colors">✕</button>
         </div>
         
-        <div class="bg-slate-900/50 border border-slate-700/50 p-5 rounded-xl mb-6">
-          <h3 id="adminFormTitle" class="text-sm font-semibold text-slate-300 mb-3">Adicionar Novo Usuário</h3>
-          <div class="flex flex-wrap gap-3 items-end">
+        <div class="bg-slate-50 border border-slate-200 p-6 rounded-xl mb-8">
+          <h3 id="adminFormTitle" class="text-sm font-bold text-slate-700 mb-4">Adicionar Novo Usuário</h3>
+          <div class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-[200px]">
               <label class="label-text">Email</label>
-              <input type="email" id="newAdminEmail" class="input-field" placeholder="email@empresa.com" />
+              <input type="email" id="newAdminEmail" class="input-field bg-white" placeholder="email@empresa.com" />
             </div>
             <div class="w-32">
               <label class="label-text">Senha</label>
-              <input type="password" id="newAdminPassword" class="input-field" placeholder="••••••" />
+              <input type="password" id="newAdminPassword" class="input-field bg-white" placeholder="••••••" />
             </div>
             <div class="w-32">
               <label class="label-text">Nível</label>
-              <select id="newAdminRole" class="input-field">
+              <select id="newAdminRole" class="input-field bg-white">
                 <option value="user">Usuário</option>
                 <option value="admin">Admin</option>
               </select>
@@ -314,22 +335,29 @@ function renderApp() {
               <button id="btnCancelEdit" class="btn-secondary hidden">Cancelar</button>
             </div>
           </div>
-          <p id="editHelperText" class="hidden text-xs text-slate-400 mt-2">Deixe a senha em branco se não quiser alterar.</p>
+          <p id="editHelperText" class="hidden text-xs text-slate-500 mt-2">Deixe a senha em branco se não quiser alterar.</p>
         </div>
         
-        <h3 class="text-sm font-semibold text-slate-300 mb-3">Usuários Cadastrados</h3>
-        <div class="overflow-x-auto border border-slate-700/50 rounded-xl">
+        <h3 class="text-sm font-bold text-slate-700 mb-3">Usuários Cadastrados</h3>
+        <div class="overflow-x-auto border border-slate-200 rounded-xl">
           <table class="w-full text-left text-sm">
-            <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-700/50">
-              <tr><th class="px-4 py-3">Email</th><th class="px-4 py-3">Nível</th><th class="px-4 py-3 text-right">Ações</th></tr>
+            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+              <tr><th class="px-5 py-3">Email</th><th class="px-5 py-3">Nível</th><th class="px-5 py-3 text-right">Ações</th></tr>
             </thead>
-            <tbody id="adminUserList" class="divide-y divide-slate-700/50 bg-slate-800/30"></tbody>
+            <tbody id="adminUserList" class="divide-y divide-slate-100 bg-white"></tbody>
           </table>
         </div>
       </div>
     </div>`;
 
   // Events
+  document.querySelectorAll('.nav-tab, .nav-tab-mobile').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      const pageId = e.target.getAttribute('data-page');
+      switchPage(pageId);
+    });
+  });
+
   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
   document.getElementById('clearBtn').addEventListener('click', () => {
     document.getElementById('orderInput').value = '';
@@ -352,6 +380,36 @@ function renderApp() {
     });
     document.getElementById('btnCreateUser').addEventListener('click', createAdminUser);
   }
+}
+
+function switchPage(pageId) {
+  // Hide all pages
+  document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+  // Show target page
+  const target = document.getElementById(pageId);
+  if (target) target.classList.remove('hidden');
+
+  // Update desktop tabs
+  document.querySelectorAll('#navMenu .nav-tab').forEach(tab => {
+    if (tab.getAttribute('data-page') === pageId) {
+      tab.classList.remove('border-transparent', 'text-slate-500');
+      tab.classList.add('border-pluggto', 'text-slate-900');
+    } else {
+      tab.classList.add('border-transparent', 'text-slate-500');
+      tab.classList.remove('border-pluggto', 'text-slate-900');
+    }
+  });
+
+  // Update mobile tabs
+  document.querySelectorAll('#navMenuMobile .nav-tab-mobile').forEach(tab => {
+    if (tab.getAttribute('data-page') === pageId) {
+      tab.classList.remove('border-transparent', 'text-slate-500');
+      tab.classList.add('border-pluggto', 'text-pluggto');
+    } else {
+      tab.classList.add('border-transparent', 'text-slate-500');
+      tab.classList.remove('border-pluggto', 'text-pluggto');
+    }
+  });
 }
 
 async function handleLogout() {
@@ -467,14 +525,14 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ─── Render Results ───────────────────────────────────────
 function statusBadge(status) {
   const map = {
-    shipping_informed: ['bg-green-500/10 text-green-400 border-green-500/30',  '✓ Enviado'],
-    invoice_error:     ['bg-orange-500/10 text-orange-400 border-orange-500/30', '⚠ Erro NF'],
-    approved:          ['bg-blue-500/10 text-blue-400 border-blue-500/30',   '● Enviar NF-e'],
-    delivered:         ['bg-emerald-500/10 text-emerald-400 border-emerald-500/30',  '✓ Entregue'],
-    cancelled:         ['bg-red-500/10 text-red-400 border-red-500/30',    '✕ Cancelado'],
+    shipping_informed: ['bg-green-50 text-green-700 border-green-200',  '✓ Enviado'],
+    invoice_error:     ['bg-orange-50 text-orange-700 border-orange-200', '⚠ Erro NF'],
+    approved:          ['bg-blue-50 text-blue-700 border-blue-200',   '● Enviar NF-e'],
+    delivered:         ['bg-emerald-50 text-emerald-700 border-emerald-200',  '✓ Entregue'],
+    cancelled:         ['bg-red-50 text-red-700 border-red-200',    '✕ Cancelado'],
   };
-  const [cls, label] = map[status] || ['bg-slate-500/10 text-slate-400 border-slate-500/30', status || 'N/A'];
-  return `<span class="px-2.5 py-1 rounded-md text-xs font-semibold border ${cls}">${label}</span>`;
+  const [cls, label] = map[status] || ['bg-slate-100 text-slate-700 border-slate-300', status || 'N/A'];
+  return `<span class="px-2.5 py-1.5 rounded-md text-xs font-bold border ${cls} shadow-sm">${label}</span>`;
 }
 
 function renderResults(mode) {
@@ -490,24 +548,24 @@ function renderResults(mode) {
   const errCount = res.filter(r => r.error || r.labelError).length;
 
   let stats = `
-    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex flex-col items-center justify-center text-center">
-      <div class="text-2xl font-bold text-white">${total}</div>
-      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Total processados</div>
+    <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+      <div class="text-3xl font-black text-slate-800">${total}</div>
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Total processados</div>
     </div>`;
   if (mode === 'nfe' || mode === 'both')
-    stats += `<div class="bg-slate-800/50 border border-pluggto/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
-      <div class="text-2xl font-bold text-pluggto">${withKey}</div>
-      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Com Chave NFe</div>
+    stats += `<div class="bg-slate-50 border border-pluggto/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+      <div class="text-3xl font-black text-pluggto">${withKey}</div>
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Com Chave NFe</div>
     </div>`;
   if (mode === 'label' || mode === 'both')
-    stats += `<div class="bg-slate-800/50 border border-pluggto/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
-      <div class="text-2xl font-bold text-pluggto">${withLbl}</div>
-      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Com Etiqueta</div>
+    stats += `<div class="bg-slate-50 border border-pluggto/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+      <div class="text-3xl font-black text-pluggto">${withLbl}</div>
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Com Etiqueta</div>
     </div>`;
   stats += `
-    <div class="bg-slate-800/50 border border-blue-500/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
-      <div class="text-2xl font-bold text-blue-400">${approved}</div>
-      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Enviar NF-e</div>
+    <div class="bg-slate-50 border border-blue-200 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+      <div class="text-3xl font-black text-blue-600">${approved}</div>
+      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Enviar NF-e</div>
     </div>`;
   document.getElementById('statsRow').innerHTML = stats;
 
@@ -516,17 +574,17 @@ function renderResults(mode) {
   dlBtns.innerHTML = '';
   if (mode === 'nfe' || mode === 'both') {
     const b = document.createElement('button');
-    b.className = 'bg-pluggto/20 hover:bg-pluggto/30 text-pluggto border border-pluggto/30 font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Chaves NFe (.xlsx)';
+    b.className = 'bg-green-50 hover:bg-green-100 text-pluggto border border-pluggto/30 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Chaves NFe (.xlsx)';
     b.onclick = downloadNfeXlsx; dlBtns.appendChild(b);
   }
   if (mode === 'label' || mode === 'both') {
     const b = document.createElement('button');
-    b.className = 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Etiquetas (.xlsx)';
+    b.className = 'bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Etiquetas (.xlsx)';
     b.onclick = downloadLabelsXlsx; dlBtns.appendChild(b);
   }
   if (withLbl > 0) {
     const b = document.createElement('button');
-    b.className = 'bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30 font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
+    b.className = 'bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
     b.onclick = () => downloadAllPdfs(false); dlBtns.appendChild(b);
 
     const p = document.createElement('button');
@@ -811,7 +869,7 @@ function formatRelativeDate(dateStr) {
 
 function statusBufferedBadge(status) {
   if (status === 'shipping_informed') {
-    return `<span class="px-2.5 py-1 rounded-md text-xs font-semibold border bg-yellow-500/10 text-yellow-400 border-yellow-500/30">📅 Agendado</span>`;
+    return `<span class="px-2.5 py-1.5 rounded-md text-xs font-bold border bg-yellow-50 text-yellow-700 border-yellow-300 shadow-sm">📅 Agendado</span>`;
   }
   return statusBadge(status); // Fallback to existing
 }
@@ -836,12 +894,12 @@ function renderBufferedTable() {
   tbody.innerHTML = orders.map(o => {
     const createdStr = o.created ? new Date(o.created).toLocaleDateString('pt-BR') : '-';
     return `
-      <tr class="hover:bg-slate-800/30 transition-colors">
-        <td class="px-4 py-3 font-mono text-slate-300">${o.id || 'N/A'}</td>
-        <td class="px-4 py-3 font-mono text-slate-300">${o.original_id || o.external || 'N/A'}</td>
-        <td class="px-4 py-3">${statusBufferedBadge(o.status)}</td>
-        <td class="px-4 py-3 text-slate-400">${createdStr}</td>
-        <td class="px-4 py-3 text-pluggto font-medium">${formatRelativeDate(o.buffering_date)}</td>
+      <tr class="hover:bg-slate-50 transition-colors">
+        <td class="px-5 py-4 font-mono text-slate-700">${o.id || 'N/A'}</td>
+        <td class="px-5 py-4 font-mono text-slate-700">${o.original_id || o.external || 'N/A'}</td>
+        <td class="px-5 py-4">${statusBufferedBadge(o.status)}</td>
+        <td class="px-5 py-4 text-slate-500">${createdStr}</td>
+        <td class="px-5 py-4 text-pluggto font-bold">${formatRelativeDate(o.buffering_date)}</td>
       </tr>
     `;
   }).join('');
@@ -864,18 +922,18 @@ async function loadAdminUsers() {
     tbody.innerHTML = '';
     data.users.forEach(u => {
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-slate-700/50 transition-colors';
+      tr.className = 'hover:bg-slate-50 transition-colors';
       const roleBadge = u.role === 'admin' 
-        ? '<span class="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-xs font-semibold">Admin</span>'
-        : '<span class="bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold">Usuário</span>';
+        ? '<span class="bg-pluggto/10 text-pluggto border border-pluggto/30 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm">Admin</span>' 
+        : '<span class="bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-md text-xs font-bold shadow-sm">Usuário</span>';
         
       tr.innerHTML = `
-        <td class="px-4 py-3 font-medium text-slate-200">${u.email}</td>
-        <td class="px-4 py-3">${roleBadge}</td>
-        <td class="px-4 py-3 text-right">
-          ${u.isMain ? '<span class="text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-800 px-2 py-1 rounded">Mestre</span>' : 
-            `<button class="text-blue-400 hover:text-blue-300 hover:underline text-sm font-medium mr-3 transition-colors" onclick="editAdminUser('${u.email}', '${u.role}')">Editar</button>
-             <button class="text-red-400 hover:text-red-300 hover:underline text-sm font-medium transition-colors" onclick="deleteAdminUser('${u.email}')">Excluir</button>`}
+        <td class="px-5 py-4 font-bold text-slate-800">${u.email}</td>
+        <td class="px-5 py-4">${roleBadge}</td>
+        <td class="px-5 py-4 text-right">
+          ${u.isMain ? '<span class="text-slate-500 text-xs font-bold uppercase tracking-wider bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">Mestre</span>' : 
+            `<button class="text-blue-600 hover:text-blue-500 hover:underline text-sm font-bold mr-4 transition-colors" onclick="editAdminUser('${u.email}', '${u.role}')">Editar</button>
+             <button class="text-red-600 hover:text-red-500 hover:underline text-sm font-bold transition-colors" onclick="deleteAdminUser('${u.email}')">Excluir</button>`}
         </td>
       `;
       tbody.appendChild(tr);
