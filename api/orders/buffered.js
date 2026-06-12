@@ -35,9 +35,17 @@ module.exports = async function handler(req, res) {
     // Filtra apenas os que possuem buffering_date (agendamentos)
     const scheduledOrders = results
       .filter(o => {
-        const rootBuffered = !!o.buffering_date;
-        const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
-        return rootBuffered || shipmentBuffered;
+        const rootBuffered = o.buffering_date;
+        const shipmentBuffered = o.shipments && o.shipments.find(s => s.buffering_date)?.buffering_date;
+        const bDateStr = rootBuffered || shipmentBuffered;
+        if (!bDateStr) return false;
+
+        // Ignora agendamentos do passado (de ontem para trás)
+        const bDate = new Date(bDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return bDate >= today;
       })
       .map(o => {
         const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || null;
