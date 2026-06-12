@@ -707,15 +707,15 @@ async function handleDownloadBuffered() {
       }
 
       // Verifica a data do último pedido retornado na página
+      // Verifica a data do último pedido retornado na página
       if (data.lastOrderDate) {
         const lastDate = new Date(data.lastOrderDate);
-        if (lastDate < thirtyDaysAgo) {
-          // keepFetching = false; // Removido para evitar parar cedo caso a API não ordene decrescente
-        }
+        // Desativamos a trava de 30 dias porque se a API ordenar do mais antigo pro mais novo,
+        // o lastDate da página 1 será de anos atrás e vai cancelar a busca inteira imediatamente!
       }
 
-      // Limite de segurança: buscar no máximo 20 páginas (agora 20 * 50 = 1000 pedidos)
-      if (page >= 20) {
+      // Limite de segurança: buscar no máximo 50 páginas (5000 pedidos)
+      if (page >= 50) {
         keepFetching = false;
       }
 

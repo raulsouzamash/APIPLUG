@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
 
     // Busca apenas 1 página por vez para não dar timeout, a paginação será controlada pelo Frontend
     // Usando apenas shipping_informed,buffered,approved. A inclusão de 'pending' estava causando lentidão e TimeOut (10s) na Vercel/Pluggto.
-    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&limit=50&page=${page}`, {
+    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&limit=100&page=${page}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -35,17 +35,9 @@ module.exports = async function handler(req, res) {
     // Filtra apenas os que possuem buffering_date (agendamentos)
     const scheduledOrders = results
       .filter(o => {
-        const rootBuffered = o.buffering_date;
-        const shipmentBuffered = o.shipments && o.shipments.find(s => s.buffering_date)?.buffering_date;
-        const bDateStr = rootBuffered || shipmentBuffered;
-        if (!bDateStr) return false;
-
-        // Ignora agendamentos do passado (de ontem para trás)
-        const bDate = new Date(bDateStr);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        return bDate >= today;
+        const rootBuffered = !!o.buffering_date;
+        const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
+        return rootBuffered || shipmentBuffered;
       })
       .map(o => {
         const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || null;
