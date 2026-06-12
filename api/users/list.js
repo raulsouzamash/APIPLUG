@@ -1,6 +1,6 @@
 const { Redis } = require('@upstash/redis');
-const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.STORAGE_URL || process.env.STORAGE_REST_API_URL || '';
-const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || process.env.STORAGE_TOKEN || process.env.STORAGE_REST_API_TOKEN || '';
+const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || process.env.STORAGE_URL || process.env.STORAGE_REST_API_URL || 'https://dummy.upstash.io';
+const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || process.env.STORAGE_TOKEN || process.env.STORAGE_REST_API_TOKEN || 'dummy';
 const kv = new Redis({ url: kvUrl, token: kvToken });
 const { requireAuth } = require('../_lib/auth');
 
