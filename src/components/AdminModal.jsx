@@ -25,8 +25,8 @@ export default function AdminModal({ isOpen, onClose }) {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await apiFetch('/api/admin/users');
-      setUsers(data);
+      const { users } = await apiFetch('/api/users/list');
+      setUsers(users || []);
     } catch (e) {
       toast.error('Erro ao listar usuários: ' + e.message);
     }
@@ -47,13 +47,13 @@ export default function AdminModal({ isOpen, onClose }) {
     setLoading(true);
     try {
       if (editId) {
-        await apiFetch(`/api/admin/users/${editId}`, {
-          method: 'PUT',
+        await apiFetch('/api/users/update', {
+          method: 'POST',
           body: { email, password, role }
         });
         toast.success('Usuário atualizado!');
       } else {
-        await apiFetch('/api/admin/users', {
+        await apiFetch('/api/users/create', {
           method: 'POST',
           body: { email, password, role }
         });
@@ -68,10 +68,13 @@ export default function AdminModal({ isOpen, onClose }) {
     }
   };
 
-  const handleDelete = async (id, userEmail) => {
+  const handleDelete = async (userEmail) => {
     if (!window.confirm(`Tem certeza que deseja excluir o usuário ${userEmail}?`)) return;
     try {
-      await apiFetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+      await apiFetch('/api/users/delete', { 
+        method: 'POST',
+        body: { email: userEmail }
+      });
       toast.success('Usuário excluído!');
       fetchUsers();
     } catch (e) {
@@ -80,7 +83,7 @@ export default function AdminModal({ isOpen, onClose }) {
   };
 
   const handleEdit = (u) => {
-    setEditId(u.id);
+    setEditId(u.email);
     setEmail(u.email);
     setRole(u.role);
     setPassword('');
@@ -167,7 +170,7 @@ export default function AdminModal({ isOpen, onClose }) {
                 </TableHeader>
                 <TableBody>
                   {users.map(u => (
-                    <TableRow key={u.id}>
+                    <TableRow key={u.email}>
                       <TableCell className="font-medium">{u.email}</TableCell>
                       <TableCell>
                         {u.role === 'admin' ? (
@@ -190,7 +193,7 @@ export default function AdminModal({ isOpen, onClose }) {
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(u)}>
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(u.id, u.email)}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => handleDelete(u.email)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
