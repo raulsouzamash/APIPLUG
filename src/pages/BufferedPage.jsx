@@ -7,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { Download, Calendar, Loader as Loader2, Search } from 'lucide-react';
+import { Download, Calendar, Loader as Loader2, Search, RefreshCw, Link as LinkIcon } from 'lucide-react';
 
 export default function BufferedPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterDate, setFilterDate] = useState('');
+  const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || '');
+  const [syncing, setSyncing] = useState(false);
 
   const fetchBuffered = async () => {
     setLoading(true);
@@ -39,7 +41,8 @@ export default function BufferedPage() {
     const data = results.map(r => ({
       ID_Interno: r.id || '',
       ID_Externo: r.ext || '',
-      Status: r.status || '',
+      Status_Plataforma: r.status || '',
+      Status_Calculado: getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado',
       Data_Criacao: r.created || '',
       Data_Agendamento: r.buffering_date || ''
     }));
@@ -49,19 +52,98 @@ export default function BufferedPage() {
     XLSX.writeFile(wb, "agendados.xlsx");
   };
 
-  const getStatusBadge = (status) => {
-    const map = {
-      shipping_informed: { className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Enviado' },
-      approved: { className: 'bg-primary/10 text-primary border-primary/20', label: 'Aprovado' },
-      buffered: { className: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Em Agendamento' },
-    };
-    const { className, label } = map[status] || { className: 'bg-muted text-muted-foreground border-border', label: status || 'N/A' };
-    return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${className}`}>{label}</span>;
+  const getDaysDiff = (dateStr) => {
+    if (!dateStr) return null;
+    const targetDate = new Date(dateStr);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const diffTime = targetDate.getTime() - today.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  };
+
+  const getStatusBadge = (r) => {
+    const diffDays = getDaysDiff(r.buffering_date);
+    if (diffDays === null) {
+      return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border bg-muted text-muted-foreground border-border`}>N/A</span>;
+    }
+    
+    if (diffDays < 0) {
+      return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border bg-emerald-500/10 text-emerald-600 border-emerald-500/20`}>Enviado</span>;
+    } else {
+      return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border bg-amber-500/10 text-amber-600 border-amber-500/20`}>Agendado</span>;
+    }
+  };
+
+  const renderDateWithBadge = (dateStr) => {
+    if (!dateStr) return <span className="text-muted-foreground">-</span>;
+    const formatted = new Date(dateStr).toLocaleDateString('pt-BR');
+    const diffDays = getDaysDiff(dateStr);
+    
+    let badge = '';
+    let badgeClass = '';
+    if (diffDays === 0) {
+      badge = 'Hoje';
+      badgeClass = 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+    } else if (diffDays === 1) {
+      badge = 'Amanhã';
+      badgeClass = 'bg-amber-500/20 text-amber-400 border-amber-500/30';
+    } else if (diffDays > 1) {
+      badge = `+ ${diffDays} dias`;
+      badgeClass = 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    } else if (diffDays === -1) {
+      badge = 'Ontem';
+      badgeClass = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    } else {
+      badge = `${diffDays} dias`;
+      badgeClass = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    }
+
+    return (
+      <div className="flex items-center gap-2">
+        <span className="font-semibold text-slate-200">{formatted}</span>
+        <span className={`text-[10px] px-2 py-0.5 rounded-full border ${badgeClass}`}>{badge}</span>
+      </div>
+    );
   };
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '-';
+    if (!dateStr) return <span className="text-muted-foreground">-</span>;
     return new Date(dateStr).toLocaleDateString('pt-BR');
+  };
+
+  const syncGoogleSheets = async () => {
+    if (!sheetUrl) {
+      toast.error('Cole a URL do Google Sheets primeiro!');
+      return;
+    }
+    setSyncing(true);
+    toast.info('Sincronizando com Google Sheets...');
+
+    const payload = results.map(r => ({
+      id: r.id || '',
+      ext: r.ext || '',
+      status: r.status || '',
+      calculated_status: getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado',
+      created: r.created ? new Date(r.created).toLocaleDateString('pt-BR') : '',
+      buffering_date: r.buffering_date ? new Date(r.buffering_date).toLocaleDateString('pt-BR') : ''
+    }));
+
+    try {
+      await fetch(sheetUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      toast.success('Dados enviados para a planilha!');
+    } catch (e) {
+      toast.error('Erro ao sincronizar. Verifique a URL do Apps Script.');
+    } finally {
+      setSyncing(false);
+    }
   };
 
   const filtered = results.filter(r => {
@@ -82,29 +164,52 @@ export default function BufferedPage() {
             Busca e exporta uma planilha com todos os pedidos dos últimos 30 dias que possuem data de agendamento definida.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row gap-4">
-          <Button
-            className="gap-2"
-            onClick={fetchBuffered}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="h-4 w-4" />
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Button
+              className="gap-2 bg-blue-600 hover:bg-blue-500 text-white"
+              onClick={fetchBuffered}
+              disabled={loading}
+            >
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              {loading ? 'Buscando...' : 'Buscar Agendamentos da API'}
+            </Button>
+            
+            {results.length > 0 && (
+              <Button
+                variant="outline"
+                className="gap-2 border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700"
+                onClick={downloadXlsx}
+              >
+                <Download className="h-4 w-4" />
+                Baixar Excel
+              </Button>
             )}
-            {loading ? 'Buscando...' : 'Buscar Agendamentos'}
-          </Button>
-          {results.length > 0 && (
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 items-center mt-4 border-t border-slate-800 pt-6">
+            <div className="relative flex-1 max-w-lg w-full">
+              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+              <Input
+                placeholder="Cole a URL do Google Apps Script (Web App) aqui..."
+                value={sheetUrl}
+                onChange={(e) => {
+                  setSheetUrl(e.target.value);
+                  localStorage.setItem('sheetUrl', e.target.value);
+                }}
+                className="pl-9 bg-slate-900 border-slate-700 text-white"
+              />
+            </div>
             <Button
               variant="outline"
-              className="gap-2"
-              onClick={downloadXlsx}
+              className="gap-2 border-emerald-500/30 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 whitespace-nowrap"
+              onClick={syncGoogleSheets}
+              disabled={syncing || results.length === 0}
             >
-              <Download className="h-4 w-4" />
-              Baixar Excel
+              {syncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {syncing ? 'Sincronizando...' : 'Sincronizar com Planilha'}
             </Button>
-          )}
+          </div>
         </CardContent>
       </Card>
 
@@ -131,18 +236,29 @@ export default function BufferedPage() {
             </div>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="border rounded-lg p-4 text-center">
-                <div className="text-3xl font-bold text-foreground">{results.length}</div>
-                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Total Encontrados</div>
-              </div>
-              <div className="border rounded-lg p-4 text-center border-primary/20 bg-primary/5">
-                <div className="text-3xl font-bold text-primary">{results.filter(r => r.status === 'shipping_informed').length}</div>
-                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Enviados</div>
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              <div className="border rounded-lg p-4 text-center border-slate-800 bg-slate-900/50">
+                <div className="text-3xl font-bold text-white">{results.length}</div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Total</div>
               </div>
               <div className="border rounded-lg p-4 text-center border-amber-500/20 bg-amber-500/5">
-                <div className="text-3xl font-bold text-amber-600">{results.filter(r => r.status === 'approved').length}</div>
-                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Aprovados</div>
+                <div className="text-3xl font-bold text-amber-500">{results.filter(r => getDaysDiff(r.buffering_date) >= 0).length}</div>
+                <div className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest mt-2">Agendados</div>
+              </div>
+              <div className="border rounded-lg p-4 text-center border-emerald-500/20 bg-emerald-500/5">
+                <div className="text-3xl font-bold text-emerald-500">{results.filter(r => getDaysDiff(r.buffering_date) < 0).length}</div>
+                <div className="text-[10px] font-bold text-emerald-500/70 uppercase tracking-widest mt-2">Enviados</div>
+              </div>
+              <div className="border rounded-lg p-4 text-center border-blue-500/20 bg-blue-500/5">
+                <div className="text-3xl font-bold text-blue-400">{results.filter(r => getDaysDiff(r.buffering_date) === 1).length}</div>
+                <div className="text-[10px] font-bold text-blue-400/70 uppercase tracking-widest mt-2">Para Amanhã</div>
+              </div>
+              <div className="border rounded-lg p-4 text-center border-indigo-500/20 bg-indigo-500/5 lg:col-span-1 col-span-2">
+                <div className="text-3xl font-bold text-indigo-400">{results.filter(r => {
+                  const d = getDaysDiff(r.buffering_date);
+                  return d > 0 && d <= 3;
+                }).length}</div>
+                <div className="text-[10px] font-bold text-indigo-400/70 uppercase tracking-widest mt-2">Próx. 3 dias</div>
               </div>
             </div>
 
@@ -159,12 +275,12 @@ export default function BufferedPage() {
                 </TableHeader>
                 <TableBody>
                   {filtered.map((r, i) => (
-                    <TableRow key={r.id || i}>
-                      <TableCell className="font-mono text-muted-foreground">{r.id || '-'}</TableCell>
-                      <TableCell className="font-mono font-medium">{r.ext || '-'}</TableCell>
-                      <TableCell>{getStatusBadge(r.status)}</TableCell>
-                      <TableCell className="text-muted-foreground">{formatDate(r.created)}</TableCell>
-                      <TableCell className="font-semibold text-primary">{formatDate(r.buffering_date)}</TableCell>
+                    <TableRow key={r.id || i} className="hover:bg-white/5 transition-colors border-slate-800">
+                      <TableCell className="font-mono text-slate-400">{r.id || '-'}</TableCell>
+                      <TableCell className="font-mono font-medium text-slate-300">{r.ext || '-'}</TableCell>
+                      <TableCell>{getStatusBadge(r)}</TableCell>
+                      <TableCell className="text-slate-400">{formatDate(r.created)}</TableCell>
+                      <TableCell className="font-medium text-blue-400">{renderDateWithBadge(r.buffering_date)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
