@@ -34,6 +34,7 @@ module.exports = async function handler(req, res) {
 
     // Filtra apenas os que possuem buffering_date (agendamentos)
     const scheduledOrders = results
+      .map(item => item.Order ? item.Order : item)
       .filter(o => {
         const rootBuffered = !!o.buffering_date;
         const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
