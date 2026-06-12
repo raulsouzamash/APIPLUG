@@ -14,13 +14,13 @@ module.exports = async function handler(req, res) {
   if (!user) return;
 
   if (user.role !== 'admin') {
-    return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem criar usuários.' });
+    return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem atualizar usuários.' });
   }
 
   const { email, password, role } = req.body || {};
 
-  if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
-    return res.status(400).json({ error: 'Email e senha são obrigatórios.' });
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Email é obrigatório.' });
   }
 
   const validRoles = ['admin', 'user'];
@@ -28,29 +28,28 @@ module.exports = async function handler(req, res) {
 
   const normalizedEmail = email.toLowerCase().trim();
 
-  // Verifica se tenta criar com o mesmo email do admin mestre
   if (process.env.APP_EMAIL && normalizedEmail === process.env.APP_EMAIL.toLowerCase().trim()) {
-    return res.status(400).json({ error: 'Este email é reservado para o administrador principal.' });
+    return res.status(400).json({ error: 'Não é possível alterar o administrador principal por aqui.' });
   }
 
   try {
     const existing = await kv.get(`user:${normalizedEmail}`);
-    if (existing) {
-      return res.status(400).json({ error: 'Usuário já existe.' });
+    if (!existing) {
+      return res.status(404).json({ error: 'Usuário não encontrado.' });
     }
 
-    const passwordHash = await bcrypt.hash(password, 12);
+    const updatedData = { ...existing, role: userRole };
 
-    await kv.set(`user:${normalizedEmail}`, {
-      email: normalizedEmail,
-      passwordHash,
-      role: userRole,
-      createdAt: Date.now()
-    });
+    // Se uma nova senha for fornecida, atualiza o hash
+    if (password && typeof password === 'string' && password.length > 0) {
+      updatedData.passwordHash = await bcrypt.hash(password, 12);
+    }
+
+    await kv.set(`user:${normalizedEmail}`, updatedData);
 
     return res.status(200).json({ ok: true });
   } catch (err) {
-    console.error('[users/create] Erro ao salvar usuário:', err.message);
+    console.error('[users/update] Erro ao atualizar usuário:', err.message);
     return res.status(500).json({ error: 'Erro ao conectar ao Vercel KV.' });
   }
 };

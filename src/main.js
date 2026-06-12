@@ -235,12 +235,18 @@ function renderApp() {
         </div>
         
         <div style="background: var(--bg-alt); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 20px;">
-          <h3 style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Adicionar Novo Usuário</h3>
-          <div style="display: flex; gap: 10px;">
-            <input type="email" id="newAdminEmail" class="form-input" placeholder="Email" style="flex: 1;" />
-            <input type="password" id="newAdminPassword" class="form-input" placeholder="Senha" style="width: 150px;" />
+          <h3 id="adminFormTitle" style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Adicionar Novo Usuário</h3>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="email" id="newAdminEmail" class="form-input" placeholder="Email" style="flex: 1; min-width: 150px;" />
+            <input type="password" id="newAdminPassword" class="form-input" placeholder="Senha" style="width: 120px;" />
+            <select id="newAdminRole" class="form-input" style="width: 120px;">
+              <option value="user">Usuário</option>
+              <option value="admin">Admin</option>
+            </select>
             <button id="btnCreateUser" class="btn-dl green" style="padding: 8px 16px;">Criar</button>
+            <button id="btnCancelEdit" class="btn-clear" style="display: none; padding: 8px 16px;">Cancelar</button>
           </div>
+          <p id="editHelperText" style="display: none; font-size: 11px; color: var(--text3); margin-top: 8px; margin-bottom: 0;">Deixe a senha em branco se não quiser alterar.</p>
         </div>
         
         <h3 style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Usuários Cadastrados</h3>
@@ -707,8 +713,11 @@ async function handleDownloadBuffered() {
 }
 
 // ─── Admin Panel ──────────────────────────────────────────
+let editingUserEmail = null;
+
 async function openAdminPanel() {
   document.getElementById('adminModal').style.display = 'flex';
+  cancelEditUser(); // Reset form
   await loadAdminUsers();
 }
 
@@ -725,7 +734,8 @@ async function loadAdminUsers() {
         <td><span class="badge ${u.role === 'admin' ? 'blue' : 'green'}">${u.role}</span></td>
         <td>
           ${u.isMain ? '<span style="color:var(--text3);font-size:12px;">Mestre</span>' : 
-            `<button class="btn-clear" onclick="deleteAdminUser('${u.email}')" style="color: var(--danger); border: 1px solid var(--danger);">Excluir</button>`}
+            `<button class="btn-clear" onclick="editAdminUser('${u.email}', '${u.role}')" style="margin-right: 5px;">Editar</button>
+             <button class="btn-clear" onclick="deleteAdminUser('${u.email}')" style="color: var(--danger); border: 1px solid var(--danger);">Excluir</button>`}
         </td>
       `;
       tbody.appendChild(tr);
@@ -735,26 +745,68 @@ async function loadAdminUsers() {
   }
 }
 
+window.editAdminUser = function(email, role) {
+  editingUserEmail = email;
+  document.getElementById('adminFormTitle').textContent = `Editando Usuário: ${email}`;
+  document.getElementById('newAdminEmail').value = email;
+  document.getElementById('newAdminEmail').disabled = true;
+  document.getElementById('newAdminRole').value = role;
+  document.getElementById('newAdminPassword').value = '';
+  document.getElementById('newAdminPassword').required = false;
+  document.getElementById('btnCreateUser').textContent = 'Salvar';
+  document.getElementById('btnCancelEdit').style.display = 'inline-block';
+  document.getElementById('editHelperText').style.display = 'block';
+}
+
+function cancelEditUser() {
+  editingUserEmail = null;
+  document.getElementById('adminFormTitle').textContent = 'Adicionar Novo Usuário';
+  document.getElementById('newAdminEmail').value = '';
+  document.getElementById('newAdminEmail').disabled = false;
+  document.getElementById('newAdminRole').value = 'user';
+  document.getElementById('newAdminPassword').value = '';
+  document.getElementById('newAdminPassword').required = true;
+  document.getElementById('btnCreateUser').textContent = 'Criar';
+  document.getElementById('btnCancelEdit').style.display = 'none';
+  document.getElementById('editHelperText').style.display = 'none';
+}
+
+// Attach listener to cancel button
+document.addEventListener('DOMContentLoaded', () => {
+  const btnCancel = document.getElementById('btnCancelEdit');
+  if (btnCancel) btnCancel.addEventListener('click', cancelEditUser);
+});
+
 async function createAdminUser() {
   const email = document.getElementById('newAdminEmail').value.trim();
   const password = document.getElementById('newAdminPassword').value;
-  if (!email || !password) { toast('Preencha email e senha', 'error'); return; }
+  const role = document.getElementById('newAdminRole').value;
+  
+  if (!email) { toast('Preencha o email', 'error'); return; }
+  if (!editingUserEmail && !password) { toast('Preencha a senha para criar o usuário', 'error'); return; }
   
   const btn = document.getElementById('btnCreateUser');
+  const originalBtnText = btn.textContent;
   btn.disabled = true;
   btn.textContent = '...';
   
   try {
-    await apiFetch('/api/users/create', { method: 'POST', body: { email, password } });
-    toast('Usuário criado com sucesso!', 'success');
-    document.getElementById('newAdminEmail').value = '';
-    document.getElementById('newAdminPassword').value = '';
+    if (editingUserEmail) {
+      await apiFetch('/api/users/update', { method: 'POST', body: { email, password, role } });
+      toast('Usuário atualizado com sucesso!', 'success');
+      cancelEditUser();
+    } else {
+      await apiFetch('/api/users/create', { method: 'POST', body: { email, password, role } });
+      toast('Usuário criado com sucesso!', 'success');
+      document.getElementById('newAdminEmail').value = '';
+      document.getElementById('newAdminPassword').value = '';
+    }
     await loadAdminUsers();
   } catch (err) {
     toast(err.message, 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = 'Criar';
+    btn.textContent = originalBtnText;
   }
 }
 
@@ -763,6 +815,7 @@ window.deleteAdminUser = async function(email) {
   try {
     await apiFetch('/api/users/delete', { method: 'POST', body: { email } });
     toast('Usuário removido.', 'success');
+    if (editingUserEmail === email) cancelEditUser();
     await loadAdminUsers();
   } catch (err) {
     toast(err.message, 'error');
