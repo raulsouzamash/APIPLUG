@@ -8,6 +8,7 @@ import JsonPage from '@/pages/JsonPage';
 import AdminModal from '@/components/AdminModal';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from 'sonner';
+import { FileKey, Calendar, Code } from 'lucide-react';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -31,8 +32,11 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Carregando...</p>
+        </div>
       </div>
     );
   }
@@ -41,47 +45,56 @@ export default function App() {
     return (
       <>
         <Login onLogin={setUser} />
-        <Toaster theme="dark" richColors position="bottom-right" />
+        <Toaster richColors position="bottom-right" />
       </>
     );
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Header 
-        user={user} 
-        onLogout={() => setUser(null)} 
-        onOpenAdmin={() => setAdminOpen(true)} 
+      <Header
+        user={user}
+        onLogout={() => setUser(null)}
+        onOpenAdmin={() => setAdminOpen(true)}
       />
-      
-      <main className="flex-1 container max-w-screen-2xl py-8">
-        <Tabs defaultValue="nfe" className="w-full flex flex-col items-center">
-          <TabsList className="grid grid-cols-3 w-full max-w-2xl mb-8 h-12 bg-[#1e293b]/50 border border-slate-700/50 rounded-xl p-1">
-            <TabsTrigger value="nfe" className="rounded-lg text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(37,99,235,0.5)] transition-all">NFe & Etiquetas</TabsTrigger>
-            <TabsTrigger value="buffered" className="rounded-lg text-base text-slate-400 font-normal data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:bg-slate-700 transition-all">Agendamentos</TabsTrigger>
-            <TabsTrigger value="json" className="rounded-lg text-base text-slate-400 font-normal data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:bg-slate-700 transition-all">Inspecionar JSON</TabsTrigger>
+
+      <main className="flex-1 container max-w-screen-2xl py-8 px-4 sm:px-6 lg:px-8">
+        <Tabs defaultValue="nfe" className="w-full">
+          <TabsList className="grid grid-cols-3 w-full max-w-2xl mx-auto mb-8">
+            <TabsTrigger value="nfe" className="gap-2">
+              <FileKey className="h-4 w-4" />
+              <span className="hidden sm:inline">NFe & Etiquetas</span>
+              <span className="sm:hidden">NFe</span>
+            </TabsTrigger>
+            <TabsTrigger value="buffered" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Agendamentos</span>
+              <span className="sm:hidden">Agenda</span>
+            </TabsTrigger>
+            <TabsTrigger value="json" className="gap-2">
+              <Code className="h-4 w-4" />
+              <span className="hidden sm:inline">Inspecionar JSON</span>
+              <span className="sm:hidden">JSON</span>
+            </TabsTrigger>
           </TabsList>
-          
-          <div className="w-full">
-          
-          <TabsContent value="nfe">
+
+          <TabsContent value="nfe" className="mt-0">
             <NFePage />
           </TabsContent>
-          
-          <TabsContent value="buffered">
+
+          <TabsContent value="buffered" className="mt-0">
             <BufferedPage />
           </TabsContent>
-          
-          <TabsContent value="json">
+
+          <TabsContent value="json" className="mt-0">
             <JsonPage />
           </TabsContent>
-          </div>
         </Tabs>
       </main>
 
       <AdminModal isOpen={adminOpen} onClose={() => setAdminOpen(false)} />
-      
-      <Toaster theme="dark" richColors position="bottom-right" />
+
+      <Toaster richColors position="bottom-right" />
     </div>
   );
 }

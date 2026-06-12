@@ -3,11 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
-import { Key, Tag, Zap, Search } from 'lucide-react';
+import { Key, Tag, Zap, Search, Download, Printer, Loader as Loader2, Trash2 } from 'lucide-react';
 
 export default function NFePage() {
   const [orderInput, setOrderInput] = useState('');
@@ -27,7 +26,7 @@ export default function NFePage() {
     setLoading(true);
     setResults([]);
     setCurrentMode(mode);
-    
+
     toast.info(`Buscando ${ids.length} pedidos...`);
 
     try {
@@ -46,14 +45,14 @@ export default function NFePage() {
 
   const getStatusBadge = (status) => {
     const map = {
-      shipping_informed: { bg: 'bg-green-500/10 text-green-500', label: '✓ Enviado' },
-      invoice_error: { bg: 'bg-destructive/10 text-destructive', label: '⚠ Erro NF' },
-      approved: { bg: 'bg-primary/10 text-primary', label: '● Enviar NF-e' },
-      delivered: { bg: 'bg-green-500/10 text-green-500', label: '✓ Entregue' },
-      cancelled: { bg: 'bg-muted text-muted-foreground', label: '✕ Cancelado' },
+      shipping_informed: { className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Enviado' },
+      invoice_error: { className: 'bg-amber-500/10 text-amber-600 border-amber-500/20', label: 'Erro NF' },
+      approved: { className: 'bg-primary/10 text-primary border-primary/20', label: 'Aprovado' },
+      delivered: { className: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', label: 'Entregue' },
+      cancelled: { className: 'bg-muted text-muted-foreground border-border', label: 'Cancelado' },
     };
-    const { bg, label } = map[status] || { bg: 'bg-muted text-muted-foreground', label: status || 'N/A' };
-    return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${bg}`}>{label}</span>;
+    const { className, label } = map[status] || { className: 'bg-muted text-muted-foreground border-border', label: status || 'N/A' };
+    return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold border ${className}`}>{label}</span>;
   };
 
   const downloadNfeXlsx = () => {
@@ -112,33 +111,34 @@ export default function NFePage() {
     }
   };
 
-  const filtered = results.filter(r => 
+  const filtered = results.filter(r =>
     (r.id?.includes(filter) || r.ext?.includes(filter) || r.nfNumber?.includes(filter))
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>IDs dos Pedidos</CardTitle>
-            <CardDescription>Cole os IDs um por linha</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-primary" />
+              IDs dos Pedidos
+            </CardTitle>
+            <CardDescription>Cole os IDs um por linha para processar</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="relative">
-              <span className="absolute top-3 right-4 font-black text-slate-800 text-6xl opacity-30 select-none pointer-events-none">ORDER IDs</span>
-              <textarea
-                className="block min-h-[200px] w-full rounded-xl border-0 bg-black/40 p-4 text-white shadow-inner ring-1 ring-inset ring-white/5 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:bg-black/60 text-lg disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono transition-all relative z-10 bg-transparent"
-                placeholder="Cole os IDs..."
-                value={orderInput}
-                onChange={(e) => setOrderInput(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center justify-between mt-4">
+          <CardContent className="space-y-4">
+            <textarea
+              className="flex min-h-[200px] w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-mono ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none transition-all"
+              placeholder="Cole os IDs aqui...&#10;Um por linha"
+              value={orderInput}
+              onChange={(e) => setOrderInput(e.target.value)}
+            />
+            <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                <strong>{orderCount}</strong> pedidos
+                <strong className="text-foreground">{orderCount}</strong> pedidos
               </span>
-              <Button variant="ghost" size="sm" onClick={() => setOrderInput('')}>
+              <Button variant="ghost" size="sm" onClick={() => setOrderInput('')} disabled={!orderInput}>
+                <Trash2 className="h-4 w-4 mr-1" />
                 Limpar
               </Button>
             </div>
@@ -147,38 +147,45 @@ export default function NFePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Ações</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Ações
+            </CardTitle>
             <CardDescription>Escolha a operação que deseja realizar</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col gap-4 h-[160px]">
-              <div className="grid grid-cols-2 gap-4 flex-1">
-                <Button 
-                  className="h-full flex flex-col gap-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-300 relative group overflow-hidden"
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  className="h-24 flex flex-col gap-2 hover:border-primary hover:bg-primary/5"
                   onClick={() => runAction('nfe')}
-                  disabled={loading}
+                  disabled={loading || !orderCount}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <Key size={24} className="text-blue-400 group-hover:text-blue-300 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
-                  <span className="font-semibold text-slate-200">Buscar Chaves</span>
+                  <Key className="h-6 w-6" />
+                  <span className="font-semibold">Buscar Chaves</span>
                 </Button>
-                <Button 
-                  className="h-full flex flex-col gap-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300 relative group overflow-hidden"
+                <Button
+                  variant="outline"
+                  className="h-24 flex flex-col gap-2 hover:border-primary hover:bg-primary/5"
                   onClick={() => runAction('label')}
-                  disabled={loading}
+                  disabled={loading || !orderCount}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <Tag size={24} className="text-emerald-400 group-hover:text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
-                  <span className="font-semibold text-slate-200">Baixar Etiquetas</span>
+                  <Tag className="h-6 w-6" />
+                  <span className="font-semibold">Baixar Etiquetas</span>
                 </Button>
               </div>
-              <Button 
-                className="w-full flex-1 flex gap-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.7)] hover:from-violet-500 hover:to-indigo-500 transition-all duration-300 text-lg group"
+              <Button
+                className="h-14 gap-2"
                 onClick={() => runAction('both')}
-                disabled={loading}
+                disabled={loading || !orderCount}
               >
-                <Zap size={22} className="group-hover:scale-110 transition-transform drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-                <span className="font-bold tracking-wide">Ambos (NFe + Etiquetas)</span>
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Zap className="h-5 w-5" />
+                )}
+                <span className="font-semibold">Ambos (NFe + Etiquetas)</span>
               </Button>
             </div>
           </CardContent>
@@ -187,76 +194,74 @@ export default function NFePage() {
 
       {results.length > 0 && (
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Resultados</CardTitle>
-              <CardDescription>Resumo do processamento</CardDescription>
-            </div>
-            <div className="flex gap-2">
-              {(currentMode === 'nfe' || currentMode === 'both') && (
-                <Button variant="secondary" size="sm" onClick={downloadNfeXlsx}>⬇ Excel NFe</Button>
-              )}
-              {(currentMode === 'label' || currentMode === 'both') && (
-                <Button variant="secondary" size="sm" onClick={downloadLabelsXlsx}>⬇ Excel Etiquetas</Button>
-              )}
-              {results.filter(r => r.labelUrl).length > 0 && (
-                <>
-                  <Button variant="outline" size="sm" onClick={() => downloadPdfs(false)}>⬇ PDFs</Button>
-                  <Button size="sm" onClick={() => downloadPdfs(true)}>🖨️ Imprimir PDFs</Button>
-                </>
-              )}
+          <CardHeader className="border-b">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle>Resultados</CardTitle>
+                <CardDescription>Resumo do processamento ({results.length} pedidos)</CardDescription>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(currentMode === 'nfe' || currentMode === 'both') && (
+                  <Button variant="secondary" size="sm" onClick={downloadNfeXlsx}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Excel NFe
+                  </Button>
+                )}
+                {(currentMode === 'label' || currentMode === 'both') && (
+                  <Button variant="secondary" size="sm" onClick={downloadLabelsXlsx}>
+                    <Download className="h-4 w-4 mr-1" />
+                    Excel Etiquetas
+                  </Button>
+                )}
+                {results.filter(r => r.labelUrl).length > 0 && (
+                  <>
+                    <Button variant="outline" size="sm" onClick={() => downloadPdfs(false)}>
+                      <Download className="h-4 w-4 mr-1" />
+                      PDFs
+                    </Button>
+                    <Button size="sm" onClick={() => downloadPdfs(true)}>
+                      <Printer className="h-4 w-4 mr-1" />
+                      Imprimir
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardHeader className="p-4 pb-0">
-                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Processados</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-2">
-                  <div className="text-2xl font-bold">{results.length}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="p-4 pb-0">
-                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Com Chave</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-2">
-                  <div className="text-2xl font-bold">{results.filter(r => r.nfeKey).length}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="p-4 pb-0">
-                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Com Etiqueta</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-2">
-                  <div className="text-2xl font-bold">{results.filter(r => r.labelUrl).length}</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="p-4 pb-0">
-                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Aprovados</CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-2">
-                  <div className="text-2xl font-bold">{results.filter(r => r.status === 'approved').length}</div>
-                </CardContent>
-              </Card>
+              <div className="border rounded-lg p-4 text-center">
+                <div className="text-3xl font-bold text-foreground">{results.length}</div>
+                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Processados</div>
+              </div>
+              <div className="border rounded-lg p-4 text-center border-primary/20 bg-primary/5">
+                <div className="text-3xl font-bold text-primary">{results.filter(r => r.nfeKey).length}</div>
+                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Com Chave</div>
+              </div>
+              <div className="border rounded-lg p-4 text-center border-emerald-500/20 bg-emerald-500/5">
+                <div className="text-3xl font-bold text-emerald-600">{results.filter(r => r.labelUrl).length}</div>
+                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Com Etiqueta</div>
+              </div>
+              <div className="border rounded-lg p-4 text-center border-amber-500/20 bg-amber-500/5">
+                <div className="text-3xl font-bold text-amber-600">{results.filter(r => r.status === 'approved').length}</div>
+                <div className="text-xs font-medium text-muted-foreground uppercase mt-1">Aprovados</div>
+              </div>
             </div>
 
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar por NF ou ID..." 
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por NF ou ID..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
-                className="pl-9 max-w-sm"
+                className="pl-10 max-w-sm"
               />
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-lg border overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow>
+                  <TableRow className="bg-muted/50">
                     <TableHead className="w-12">#</TableHead>
                     <TableHead>ID Pedido</TableHead>
                     <TableHead>Status</TableHead>
@@ -274,9 +279,9 @@ export default function NFePage() {
                 <TableBody>
                   {filtered.map((r, i) => (
                     <TableRow key={r.id || i}>
-                      <TableCell className="font-mono text-xs text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell>
-                        <div className="font-mono">{r.ext || '-'}</div>
+                        <div className="font-mono font-medium">{r.ext || '-'}</div>
                         <div className="text-xs text-muted-foreground font-mono">{r.id || '-'}</div>
                       </TableCell>
                       <TableCell>{getStatusBadge(r.status)}</TableCell>
@@ -285,9 +290,9 @@ export default function NFePage() {
                           <TableCell className="font-mono">{r.nfNumber || '-'}</TableCell>
                           <TableCell>
                             {r.error ? (
-                              <span className="text-xs text-red-500 font-medium">{r.error}</span>
+                              <span className="text-xs text-destructive">{r.error}</span>
                             ) : (
-                              <span className="font-mono text-xs text-green-500 break-all">{r.nfeKey || '-'}</span>
+                              <span className="font-mono text-xs text-emerald-600">{r.nfeKey || '-'}</span>
                             )}
                           </TableCell>
                         </>
@@ -295,10 +300,10 @@ export default function NFePage() {
                       {(currentMode === 'label' || currentMode === 'both') && (
                         <TableCell>
                           {r.labelError ? (
-                            <span className="text-xs text-red-500 font-medium">{r.labelError}</span>
+                            <span className="text-xs text-destructive">{r.labelError}</span>
                           ) : r.labelUrl ? (
-                            <a href={r.labelUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline font-medium text-xs">
-                              Abrir Etiqueta
+                            <a href={r.labelUrl} target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm font-medium">
+                              Abrir PDF
                             </a>
                           ) : (
                             '-'

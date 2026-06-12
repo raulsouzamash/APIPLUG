@@ -3,15 +3,16 @@ import { cn } from "@/lib/utils"
 
 const Input = React.forwardRef(({ className, type, ...props }, ref) => {
   return (
-    (<input
+    <input
       type={type}
       className={cn(
-        "block w-full rounded-md border-0 bg-black/40 py-2 text-white shadow-inner ring-1 ring-inset ring-white/5 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:bg-black/60 text-base leading-6 disabled:cursor-not-allowed disabled:opacity-50 transition-all",
+        "flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200",
         className
       )}
       ref={ref}
-      {...props} />)
-  );
+      {...props}
+    />
+  )
 })
 Input.displayName = "Input"
 

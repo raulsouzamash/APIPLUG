@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Package, Loader as Loader2 } from 'lucide-react';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -25,64 +29,72 @@ export default function Login({ onLogin }) {
   };
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-[#0f172a] h-screen">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <div className="mx-auto h-10 w-10 bg-indigo-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-          </svg>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+      <div className="w-full max-w-md space-y-8 animate-fade-in">
+        <div className="text-center space-y-6">
+          <div className="mx-auto h-16 w-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/30">
+            <Package className="h-8 w-8 text-primary-foreground" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">
+              Pluggto Tools
+            </h1>
+            <p className="text-muted-foreground">
+              Acesse sua conta para continuar
+            </p>
+          </div>
         </div>
-        <h2 className="mt-6 text-center text-2xl font-bold leading-9 tracking-tight text-white">
-          Acesse sua conta
-        </h2>
-      </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block text-base font-medium leading-6 text-gray-300">
-              Email
-            </label>
-            <div className="mt-2">
-              <input
+        <div className="bg-card border border-border/50 rounded-2xl p-8 shadow-lg">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="block w-full rounded-md border-0 bg-white/5 py-2 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-base sm:leading-6"
+                placeholder="seu@email.com"
+                className="h-12"
               />
             </div>
-          </div>
 
-          <div>
-            <label htmlFor="password" className="block text-base font-medium leading-6 text-gray-300">
-              Senha
-            </label>
-            <div className="mt-2">
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
                 id="password"
                 name="password"
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="block w-full rounded-md border-0 bg-white/5 py-2 text-white shadow-sm ring-1 ring-inset ring-white/10 focus:ring-2 focus:ring-inset focus:ring-indigo-500 text-base sm:leading-6"
+                placeholder="••••••••"
+                className="h-12"
               />
             </div>
-          </div>
 
-          <div>
-            <button
+            <Button
               type="submit"
               disabled={loading}
-              className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-2 text-base font-semibold leading-6 text-white shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)] hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-50 transition-all duration-300"
+              className="w-full h-12 text-base"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </button>
-          </div>
-        </form>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                'Entrar'
+              )}
+            </Button>
+          </form>
+        </div>
+
+        <p className="text-center text-sm text-muted-foreground">
+          Ferramenta interna para gestão de pedidos Pluggto
+        </p>
       </div>
     </div>
   );
