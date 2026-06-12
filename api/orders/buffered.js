@@ -17,7 +17,8 @@ module.exports = async function handler(req, res) {
     const token = await getPluggtoToken();
 
     // Busca apenas 1 página por vez para não dar timeout, a paginação será controlada pelo Frontend
-    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&limit=100&page=${page}`, {
+    // Removendo o filtro restrito de status para garantir que encontraremos agendamentos mesmo se o status na pluggto estiver como 'pending'
+    const resp = await fetch(`${API_BASE}/orders?limit=100&page=${page}&sort_order=desc`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -46,7 +47,7 @@ module.exports = async function handler(req, res) {
 
         return {
           id: o.id,
-          external: o.external || 'N/A',
+          external: o.external || o.original_id || 'N/A',
           status: o.status,
           sub_status: o.sub_status,
           buffering_date: bDate,

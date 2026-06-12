@@ -710,8 +710,13 @@ async function handleDownloadBuffered() {
       if (data.lastOrderDate) {
         const lastDate = new Date(data.lastOrderDate);
         if (lastDate < thirtyDaysAgo) {
-          keepFetching = false; // Parar de buscar pois já passamos de 30 dias
+          // keepFetching = false; // Removido para evitar parar cedo caso a API não ordene decrescente
         }
+      }
+
+      // Limite de segurança: buscar no máximo 10 páginas (1000 pedidos)
+      if (page >= 10) {
+        keepFetching = false;
       }
 
       // Se não tem mais páginas na Pluggto
