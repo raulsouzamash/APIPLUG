@@ -46,14 +46,14 @@ export default function NFePage() {
 
   const getStatusBadge = (status) => {
     const map = {
-      shipping_informed: { bg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', label: '✓ Enviado' },
-      invoice_error: { bg: 'bg-orange-500/10 text-orange-500 border-orange-500/20', label: '⚠ Erro NF' },
-      approved: { bg: 'bg-blue-500/10 text-blue-500 border-blue-500/20', label: '● Enviar NF-e' },
-      delivered: { bg: 'bg-green-500/10 text-green-500 border-green-500/20', label: '✓ Entregue' },
-      cancelled: { bg: 'bg-red-500/10 text-red-500 border-red-500/20', label: '✕ Cancelado' },
+      shipping_informed: { bg: 'bg-green-500/10 text-green-500', label: '✓ Enviado' },
+      invoice_error: { bg: 'bg-destructive/10 text-destructive', label: '⚠ Erro NF' },
+      approved: { bg: 'bg-primary/10 text-primary', label: '● Enviar NF-e' },
+      delivered: { bg: 'bg-green-500/10 text-green-500', label: '✓ Entregue' },
+      cancelled: { bg: 'bg-muted text-muted-foreground', label: '✕ Cancelado' },
     };
-    const { bg, label } = map[status] || { bg: 'bg-muted text-muted-foreground border-border', label: status || 'N/A' };
-    return <span className={`px-2.5 py-1 rounded-md text-xs font-bold border ${bg}`}>{label}</span>;
+    const { bg, label } = map[status] || { bg: 'bg-muted text-muted-foreground', label: status || 'N/A' };
+    return <span className={`px-2.5 py-1 rounded-md text-xs font-semibold ${bg}`}>{label}</span>;
   };
 
   const downloadNfeXlsx = () => {
@@ -117,25 +117,23 @@ export default function NFePage() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="shadow-lg relative overflow-hidden">
+        <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">1</div>
-              <CardTitle>Cole os IDs dos Pedidos</CardTitle>
-            </div>
+            <CardTitle>IDs dos Pedidos</CardTitle>
+            <CardDescription>Cole os IDs um por linha</CardDescription>
           </CardHeader>
           <CardContent>
             <textarea
-              className="w-full h-40 p-4 rounded-md border bg-background text-sm font-mono focus:ring-2 focus:ring-primary focus:outline-none resize-none"
-              placeholder="Cole os IDs dos pedidos, um por linha..."
+              className="flex min-h-[160px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono"
+              placeholder="Cole os IDs..."
               value={orderInput}
               onChange={(e) => setOrderInput(e.target.value)}
             />
             <div className="flex items-center justify-between mt-4">
-              <span className="text-sm text-muted-foreground font-medium bg-secondary px-3 py-1 rounded-full">
-                <strong className="text-primary">{orderCount}</strong> pedidos
+              <span className="text-sm text-muted-foreground">
+                <strong>{orderCount}</strong> pedidos
               </span>
               <Button variant="ghost" size="sm" onClick={() => setOrderInput('')}>
                 Limpar
@@ -144,41 +142,38 @@ export default function NFePage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg relative overflow-hidden">
+        <Card>
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold">2</div>
-              <CardTitle>Escolha a Ação</CardTitle>
-            </div>
+            <CardTitle>Ações</CardTitle>
+            <CardDescription>Escolha a operação que deseja realizar</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[160px]">
               <Button 
                 variant="outline" 
-                className="h-full flex flex-col items-center justify-center gap-2 hover:border-primary hover:bg-primary/5"
+                className="h-full flex flex-col gap-2"
                 onClick={() => runAction('nfe')}
                 disabled={loading}
               >
-                <Key size={32} className="text-primary" />
-                <span className="font-bold">Buscar Chaves</span>
+                <Key size={24} />
+                <span>Buscar Chaves</span>
               </Button>
               <Button 
                 variant="outline" 
-                className="h-full flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-500/5"
+                className="h-full flex flex-col gap-2"
                 onClick={() => runAction('label')}
                 disabled={loading}
               >
-                <Tag size={32} className="text-blue-500" />
-                <span className="font-bold">Baixar Etiquetas</span>
+                <Tag size={24} />
+                <span>Baixar Etiquetas</span>
               </Button>
               <Button 
-                variant="default" 
-                className="sm:col-span-2 h-full flex items-center justify-center gap-2 text-lg"
+                className="sm:col-span-2 h-full flex gap-2"
                 onClick={() => runAction('both')}
                 disabled={loading}
               >
-                <Zap size={24} />
-                <span className="font-bold">Ambos (NFe + Etiquetas)</span>
+                <Zap size={20} />
+                <span>Ambos (NFe + Etiquetas)</span>
               </Button>
             </div>
           </CardContent>
@@ -186,10 +181,13 @@ export default function NFePage() {
       </div>
 
       {results.length > 0 && (
-        <Card className="shadow-lg animate-slide-up border-primary/20">
-          <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
-            <CardTitle className="flex items-center gap-2 text-xl">📊 Resultados</CardTitle>
-            <div className="flex flex-wrap gap-2">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Resultados</CardTitle>
+              <CardDescription>Resumo do processamento</CardDescription>
+            </div>
+            <div className="flex gap-2">
               {(currentMode === 'nfe' || currentMode === 'both') && (
                 <Button variant="secondary" size="sm" onClick={downloadNfeXlsx}>⬇ Excel NFe</Button>
               )}
@@ -206,22 +204,38 @@ export default function NFePage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-              <div className="bg-muted/50 border p-4 rounded-xl text-center">
-                <div className="text-2xl font-black">{results.length}</div>
-                <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Processados</div>
-              </div>
-              <div className="bg-primary/10 border border-primary/20 p-4 rounded-xl text-center">
-                <div className="text-2xl font-black text-primary">{results.filter(r => r.nfeKey).length}</div>
-                <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Com Chave NFe</div>
-              </div>
-              <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl text-center">
-                <div className="text-2xl font-black text-blue-500">{results.filter(r => r.labelUrl).length}</div>
-                <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Com Etiqueta</div>
-              </div>
-              <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl text-center">
-                <div className="text-2xl font-black text-emerald-500">{results.filter(r => r.status === 'approved').length}</div>
-                <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Enviar NF-e</div>
-              </div>
+              <Card>
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Processados</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <div className="text-2xl font-bold">{results.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Com Chave</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <div className="text-2xl font-bold">{results.filter(r => r.nfeKey).length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Com Etiqueta</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <div className="text-2xl font-bold">{results.filter(r => r.labelUrl).length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="p-4 pb-0">
+                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase">Aprovados</CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-2">
+                  <div className="text-2xl font-bold">{results.filter(r => r.status === 'approved').length}</div>
+                </CardContent>
+              </Card>
             </div>
 
             <div className="relative mb-4">

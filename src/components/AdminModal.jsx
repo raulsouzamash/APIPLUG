@@ -89,23 +89,19 @@ export default function AdminModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-[9999] flex items-center justify-center p-4 animate-fade-in">
-      <Card className="w-full max-w-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="flex justify-between items-center p-6 border-b bg-card">
-          <CardTitle className="text-xl flex items-center gap-2">
-            <Shield className="text-primary" />
-            Painel de Usuários
-          </CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
-            <X />
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b">
+          <CardTitle className="text-xl">Usuários do Sistema</CardTitle>
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full h-8 w-8">
+            <X className="h-4 w-4" />
           </Button>
         </div>
         
         <div className="p-6 overflow-y-auto">
-          <div className="bg-muted/50 border rounded-xl p-6 mb-8">
-            <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
-              <UserPlus size={16} />
-              {editId ? 'Editar Usuário' : 'Adicionar Novo Usuário'}
+          <div className="border rounded-md p-4 bg-muted/50 mb-6">
+            <h3 className="text-sm font-semibold mb-4">
+              {editId ? 'Editar Usuário' : 'Novo Usuário'}
             </h3>
             <div className="flex flex-wrap gap-4 items-end">
               <div className="flex-1 min-w-[200px] space-y-2">
@@ -139,8 +135,8 @@ export default function AdminModal({ isOpen, onClose }) {
             {editId && <p className="text-xs text-muted-foreground mt-2">Deixe a senha em branco se não quiser alterar.</p>}
           </div>
           
-          <h3 className="text-sm font-bold mb-3">Usuários Cadastrados</h3>
-          <div className="rounded-md border bg-card">
+          <h3 className="text-sm font-semibold mb-3">Usuários Cadastrados</h3>
+          <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -152,22 +148,22 @@ export default function AdminModal({ isOpen, onClose }) {
               <TableBody>
                 {users.map(u => (
                   <TableRow key={u.id}>
-                    <TableCell className="font-bold">{u.email}</TableCell>
+                    <TableCell className="font-medium">{u.email}</TableCell>
                     <TableCell>
                       {u.role === 'admin' 
-                        ? <span className="bg-primary/20 text-primary border border-primary/30 px-2.5 py-1 rounded-md text-xs font-bold">Admin</span> 
-                        : <span className="bg-blue-500/10 text-blue-500 border border-blue-500/20 px-2.5 py-1 rounded-md text-xs font-bold">Usuário</span>}
+                        ? <span className="bg-primary/10 text-primary px-2.5 py-0.5 rounded-md text-xs font-semibold">Admin</span> 
+                        : <span className="text-muted-foreground px-2.5 py-0.5 rounded-md text-xs font-semibold">Usuário</span>}
                     </TableCell>
                     <TableCell className="text-right">
                       {u.isMain ? (
-                        <span className="text-xs text-muted-foreground mr-4">Principal (Não editável)</span>
+                        <span className="text-xs text-muted-foreground">Principal</span>
                       ) : (
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="icon" onClick={() => handleEdit(u)}>
-                            <Edit size={16} />
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(u)}>
+                            <Edit className="h-4 w-4" />
                           </Button>
-                          <Button variant="destructive" size="icon" onClick={() => handleDelete(u.id, u.email)}>
-                            <Trash2 size={16} />
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => handleDelete(u.id, u.email)}>
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       )}

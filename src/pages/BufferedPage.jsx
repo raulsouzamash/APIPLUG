@@ -48,9 +48,9 @@ export default function BufferedPage() {
   };
 
   const getStatusBadge = (status) => {
-    if (status === 'shipping_informed') return <span className="px-2 py-1 rounded text-xs font-bold border bg-yellow-500/10 text-yellow-500 border-yellow-500/20">Embalado</span>;
-    if (status === 'approved') return <span className="px-2 py-1 rounded text-xs font-bold border bg-blue-500/10 text-blue-500 border-blue-500/20">Aprovado</span>;
-    return <span className="px-2 py-1 rounded text-xs font-bold border bg-muted text-muted-foreground border-border">{status}</span>;
+    if (status === 'shipping_informed') return <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-green-500/10 text-green-500">Embalado</span>;
+    if (status === 'approved') return <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-primary/10 text-primary">Aprovado</span>;
+    return <span className="px-2.5 py-1 rounded-md text-xs font-semibold bg-muted text-muted-foreground">{status}</span>;
   };
 
   const filtered = results.filter(r => {
@@ -60,12 +60,12 @@ export default function BufferedPage() {
   });
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <Card className="shadow-lg border-l-4 border-l-blue-500 bg-blue-500/5">
+    <div className="space-y-6">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-xl">📅 Exportar Agendamentos Pendentes</CardTitle>
-          <CardDescription className="text-base text-muted-foreground">
-            Busca e exporta uma planilha com todos os pedidos dos últimos 30 dias que não foram enviados e possuem data de agendamento (buffering_date).
+          <CardTitle>Exportar Agendamentos Pendentes</CardTitle>
+          <CardDescription>
+            Busca e exporta uma planilha com todos os pedidos dos últimos 30 dias que não foram enviados e possuem data de agendamento.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -90,18 +90,15 @@ export default function BufferedPage() {
       </Card>
 
       {results.length > 0 && (
-        <Card className="shadow-lg animate-slide-up">
+        <Card>
           <CardHeader>
             <CardTitle>Agendamentos Encontrados</CardTitle>
+            <CardDescription>Visualização dos resultados ({filtered.length} filtrados)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col sm:flex-row gap-6 mb-6">
-              <div className="bg-muted/50 border p-5 rounded-xl text-center w-full sm:w-auto min-w-[160px]">
-                <div className="text-3xl font-black">{filtered.length}</div>
-                <div className="text-xs font-bold text-muted-foreground uppercase mt-1">Total Encontrados</div>
-              </div>
               <div className="flex flex-col justify-center max-w-sm w-full">
-                <label className="text-sm font-semibold mb-2">Filtrar por Dia de Agendamento:</label>
+                <label className="text-sm font-medium mb-2">Filtrar por Dia de Agendamento:</label>
                 <Input type="date" value={filterDate} onChange={(e) => setFilterDate(e.target.value)} />
               </div>
             </div>
