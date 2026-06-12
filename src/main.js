@@ -117,32 +117,32 @@ async function handleLogin(e) {
 function renderApp() {
   document.getElementById('app').innerHTML = `
     <!-- Top Navigation Bar -->
-    <header class="bg-white border-b border-slate-200 shadow-sm mb-6 animate-slide-up sticky top-0 z-50">
+    <header class="bg-slate-900/80 backdrop-blur-xl border-b border-slate-800 shadow-lg mb-6 animate-slide-up sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
           <div class="flex">
             <div class="flex-shrink-0 flex items-center gap-3 mr-8">
-              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-pluggto to-green-500 flex items-center justify-center text-white font-bold shadow-md">P</div>
-              <span class="font-bold text-lg text-slate-800 hidden sm:block">Pluggto Tools</span>
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-pluggto to-green-500 flex items-center justify-center text-white font-bold shadow-[0_0_10px_rgba(16,169,88,0.4)]">P</div>
+              <span class="font-bold text-lg text-slate-100 hidden sm:block tracking-wide">Pluggto Tools</span>
             </div>
             <div class="hidden sm:flex sm:space-x-8" id="navMenu">
-              <button data-page="page-nfe" class="nav-tab active-tab border-pluggto text-slate-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">NFe & Etiquetas</button>
-              <button data-page="page-agendamentos" class="nav-tab border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">Agendamentos</button>
-              <button data-page="page-json" class="nav-tab border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">Inspecionar JSON</button>
+              <button data-page="page-nfe" class="nav-tab active-tab border-pluggto text-white inline-flex items-center px-1 pt-1 border-b-2 text-sm font-semibold transition-colors shadow-[0_2px_0_0_rgba(16,169,88,1)]">NFe & Etiquetas</button>
+              <button data-page="page-agendamentos" class="nav-tab border-transparent text-slate-400 hover:border-slate-600 hover:text-slate-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">Agendamentos</button>
+              <button data-page="page-json" class="nav-tab border-transparent text-slate-400 hover:border-slate-600 hover:text-slate-200 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors">Inspecionar JSON</button>
             </div>
           </div>
           <div class="flex items-center gap-4">
-            ${state.user?.role === 'admin' ? '<button class="bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold py-1.5 px-3 rounded-md transition-colors" id="btnAdminPanel">Admin</button>' : ''}
-            <span class="text-sm font-medium text-slate-500 hidden md:inline-block">${state.user?.email || ''}</span>
-            <button class="text-slate-400 hover:text-red-500 text-sm font-medium transition-colors" id="logoutBtn">Sair</button>
+            ${state.user?.role === 'admin' ? '<button class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600 text-xs font-semibold py-1.5 px-3 rounded-md transition-colors" id="btnAdminPanel">Admin</button>' : ''}
+            <span class="text-sm font-medium text-slate-400 hidden md:inline-block">${state.user?.email || ''}</span>
+            <button class="text-slate-500 hover:text-red-400 text-sm font-medium transition-colors" id="logoutBtn">Sair</button>
           </div>
         </div>
       </div>
       <!-- Mobile menu -->
-      <div class="sm:hidden flex overflow-x-auto border-t border-slate-100" id="navMenuMobile">
-        <button data-page="page-nfe" class="nav-tab-mobile active-tab-mobile border-pluggto text-pluggto whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">NFe & Etiquetas</button>
-        <button data-page="page-agendamentos" class="nav-tab-mobile border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">Agendamentos</button>
-        <button data-page="page-json" class="nav-tab-mobile border-transparent text-slate-500 hover:text-slate-700 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">Inspecionar JSON</button>
+      <div class="sm:hidden flex overflow-x-auto border-t border-slate-800" id="navMenuMobile">
+        <button data-page="page-nfe" class="nav-tab-mobile active-tab-mobile border-pluggto text-pluggto whitespace-nowrap py-3 px-4 border-b-2 font-semibold text-sm">NFe & Etiquetas</button>
+        <button data-page="page-agendamentos" class="nav-tab-mobile border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">Agendamentos</button>
+        <button data-page="page-json" class="nav-tab-mobile border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap py-3 px-4 border-b-2 font-medium text-sm">Inspecionar JSON</button>
       </div>
     </header>
 
@@ -170,8 +170,8 @@ function renderApp() {
           <!-- IDs dos pedidos -->
           <div class="glass-card p-6 lg:p-8">
             <div class="flex items-center gap-3 mb-5">
-              <div class="w-8 h-8 rounded-full bg-pluggto/10 text-pluggto flex items-center justify-center font-bold border border-pluggto/20">1</div>
-              <h2 class="text-lg font-bold text-slate-800">Cole os IDs dos Pedidos</h2>
+              <div class="w-8 h-8 rounded-full bg-pluggto/20 text-pluggto flex items-center justify-center font-bold border border-pluggto/30 shadow-[0_0_10px_rgba(16,169,88,0.2)]">1</div>
+              <h2 class="text-lg font-bold text-slate-100">Cole os IDs dos Pedidos</h2>
             </div>
             <textarea id="orderInput" class="input-field min-h-[160px] font-mono text-base leading-relaxed"
               placeholder="Cole os IDs dos pedidos, um por linha:
@@ -189,21 +189,21 @@ function renderApp() {
           <!-- Ações -->
           <div class="glass-card p-6 lg:p-8">
             <div class="flex items-center gap-3 mb-5">
-              <div class="w-8 h-8 rounded-full bg-pluggto/10 text-pluggto flex items-center justify-center font-bold border border-pluggto/20">2</div>
-              <h2 class="text-lg font-bold text-slate-800">Escolha a Ação</h2>
+              <div class="w-8 h-8 rounded-full bg-pluggto/20 text-pluggto flex items-center justify-center font-bold border border-pluggto/30 shadow-[0_0_10px_rgba(16,169,88,0.2)]">2</div>
+              <h2 class="text-lg font-bold text-slate-100">Escolha a Ação</h2>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[160px]">
-              <button class="flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-pluggto/50 hover:shadow-md transition-all group" id="btnNfe">
-                <span class="text-4xl group-hover:scale-110 transition-transform">🔑</span>
-                <span class="font-bold text-slate-700">Buscar Chaves</span>
+              <button class="flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:border-pluggto/50 hover:shadow-lg transition-all group" id="btnNfe">
+                <span class="text-4xl group-hover:scale-110 transition-transform drop-shadow-md">🔑</span>
+                <span class="font-bold text-slate-200 tracking-wide">Buscar Chaves</span>
               </button>
-              <button class="flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white hover:border-pluggto/50 hover:shadow-md transition-all group" id="btnLabel">
-                <span class="text-4xl group-hover:scale-110 transition-transform">🏷️</span>
-                <span class="font-bold text-slate-700">Baixar Etiquetas</span>
+              <button class="flex flex-col items-center justify-center gap-3 p-5 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-800 hover:border-pluggto/50 hover:shadow-lg transition-all group" id="btnLabel">
+                <span class="text-4xl group-hover:scale-110 transition-transform drop-shadow-md">🏷️</span>
+                <span class="font-bold text-slate-200 tracking-wide">Baixar Etiquetas</span>
               </button>
-              <button class="sm:col-span-2 flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-pluggto/30 bg-pluggto/5 hover:bg-pluggto/10 hover:border-pluggto transition-all group shadow-sm" id="btnBoth">
-                <span class="text-2xl group-hover:scale-110 transition-transform">⚡</span>
-                <span class="font-bold text-pluggto text-lg">Ambos (NFe + Etiquetas)</span>
+              <button class="sm:col-span-2 flex flex-col items-center justify-center gap-2 p-4 rounded-xl border border-pluggto/30 bg-pluggto/10 hover:bg-pluggto/20 hover:border-pluggto transition-all group shadow-sm hover:shadow-[0_0_15px_rgba(16,169,88,0.3)]" id="btnBoth">
+                <span class="text-2xl group-hover:scale-110 transition-transform drop-shadow-md">⚡</span>
+                <span class="font-bold text-pluggto text-lg tracking-wide">Ambos (NFe + Etiquetas)</span>
               </button>
             </div>
           </div>
@@ -211,8 +211,8 @@ function renderApp() {
 
         <!-- Resultados -->
         <div class="glass-card p-6 lg:p-8 hidden animate-fade-in" id="resultsCard">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-4">
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📊 Resultados</h2>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700 pb-4">
+            <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2 drop-shadow-sm">📊 Resultados</h2>
             <div class="flex gap-2" id="dlBtns"></div>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8" id="statsRow"></div>
@@ -239,22 +239,22 @@ function renderApp() {
 
       <!-- ================= PAGE 2: Agendamentos ================= -->
       <div id="page-agendamentos" class="page-section flex flex-col gap-6 hidden">
-        <div class="glass-card p-6 lg:p-8 border-l-4 border-l-blue-500 bg-blue-50/30">
-          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-2">📅 Exportar Agendamentos Pendentes</h2>
-          <p class="text-base text-slate-600 mb-6">Busca e exporta uma planilha com todos os pedidos dos últimos 30 dias que não foram enviados e possuem "buffering_date" definido.</p>
-          <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors w-full sm:w-auto text-base" id="btnDownloadBuffered">⬇ Baixar Agendamentos (.xlsx)</button>
+        <div class="glass-card p-6 lg:p-8 border-l-4 border-l-blue-500 bg-blue-900/20">
+          <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-2">📅 Exportar Agendamentos Pendentes</h2>
+          <p class="text-base text-slate-300 mb-6">Busca e exporta uma planilha com todos os pedidos dos últimos 30 dias que não foram enviados e possuem "buffering_date" definido.</p>
+          <button class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg shadow-[0_0_15px_rgba(37,99,235,0.3)] hover:shadow-[0_0_25px_rgba(37,99,235,0.5)] transition-all w-full sm:w-auto text-base" id="btnDownloadBuffered">⬇ Baixar Agendamentos (.xlsx)</button>
         </div>
 
         <!-- Resultados Agendamentos -->
         <div class="glass-card p-6 lg:p-8 hidden animate-fade-in" id="bufferedResultsCard">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-200 pb-4">
-            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">📅 Agendamentos Encontrados</h2>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700 pb-4">
+            <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">📅 Agendamentos Encontrados</h2>
           </div>
           
           <div class="flex flex-col sm:flex-row gap-6 mb-8">
-            <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl text-center w-full sm:w-auto min-w-[160px] shadow-sm">
-              <div class="text-3xl font-black text-slate-800" id="bufferedTotalCount">0</div>
-              <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Total Encontrados</div>
+            <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl text-center w-full sm:w-auto min-w-[160px] shadow-sm">
+              <div class="text-3xl font-black text-slate-100" id="bufferedTotalCount">0</div>
+              <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Total Encontrados</div>
             </div>
             
             <div class="flex-1 flex flex-col justify-center max-w-sm">
@@ -263,9 +263,9 @@ function renderApp() {
             </div>
           </div>
 
-          <div class="overflow-x-auto border border-slate-200 rounded-xl">
+          <div class="overflow-x-auto border border-slate-700 rounded-xl shadow-inner">
             <table class="w-full text-left text-sm whitespace-nowrap">
-              <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+              <thead class="text-xs text-slate-400 uppercase bg-slate-800/80 border-b border-slate-700">
                 <tr>
                   <th class="px-5 py-4">ID Interno</th>
                   <th class="px-5 py-4">ID Externo</th>
@@ -274,7 +274,7 @@ function renderApp() {
                   <th class="px-5 py-4">Data Agendamento</th>
                 </tr>
               </thead>
-              <tbody id="bufferedTableBody" class="divide-y divide-slate-100"></tbody>
+              <tbody id="bufferedTableBody" class="divide-y divide-slate-700/50 bg-slate-900/30 backdrop-blur-sm"></tbody>
             </table>
           </div>
         </div>
@@ -283,7 +283,7 @@ function renderApp() {
       <!-- ================= PAGE 3: Inspecionar JSON ================= -->
       <div id="page-json" class="page-section flex flex-col gap-6 hidden">
         <div class="glass-card p-6 lg:p-8">
-          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-6">🔎 Inspecionar Pedido (JSON Completo)</h2>
+          <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-6">🔎 Inspecionar Pedido (JSON Completo)</h2>
           <div class="flex flex-col sm:flex-row gap-4 mb-6">
             <select id="jsonSearchType" class="input-field sm:max-w-[220px]">
               <option value="external">ID Externo (ex: Shopee)</option>
@@ -294,8 +294,8 @@ function renderApp() {
           </div>
           <div id="jsonResultContainer" class="hidden">
             <div class="flex justify-between items-center mb-3">
-              <span class="text-sm font-bold text-slate-600">Resultado da Busca:</span>
-              <button class="text-sm font-semibold text-pluggto hover:text-green-700 transition-colors" id="btnCopyJson">📋 Copiar JSON</button>
+              <span class="text-sm font-bold text-slate-400">Resultado da Busca:</span>
+              <button class="text-sm font-semibold text-pluggto hover:text-green-400 transition-colors" id="btnCopyJson">📋 Copiar JSON</button>
             </div>
             <pre id="jsonResultPre" class="bg-slate-800 border border-slate-700 rounded-xl p-6 text-sm font-mono text-green-400 max-h-[600px] overflow-auto shadow-inner"></pre>
           </div>
@@ -305,27 +305,27 @@ function renderApp() {
     </main>
     
     <!-- Admin Modal -->
-    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4 animate-fade-in">
-      <div class="glass-panel w-full max-w-2xl p-8 relative overflow-hidden bg-white">
+    <div id="adminModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[9999] hidden items-center justify-center p-4 animate-fade-in">
+      <div class="glass-panel w-full max-w-2xl p-8 relative overflow-hidden bg-slate-900 border border-slate-700/50 shadow-2xl">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">👥 Painel de Usuários</h2>
-          <button id="closeAdminModalBtn" class="text-slate-400 hover:text-slate-800 text-2xl transition-colors">✕</button>
+          <h2 class="text-xl font-bold text-slate-100 flex items-center gap-2">👥 Painel de Usuários</h2>
+          <button id="closeAdminModalBtn" class="text-slate-500 hover:text-slate-300 text-2xl transition-colors">✕</button>
         </div>
         
-        <div class="bg-slate-50 border border-slate-200 p-6 rounded-xl mb-8">
-          <h3 id="adminFormTitle" class="text-sm font-bold text-slate-700 mb-4">Adicionar Novo Usuário</h3>
+        <div class="bg-slate-800/80 border border-slate-700 p-6 rounded-xl mb-8 shadow-inner">
+          <h3 id="adminFormTitle" class="text-sm font-bold text-slate-300 mb-4">Adicionar Novo Usuário</h3>
           <div class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-[200px]">
               <label class="label-text">Email</label>
-              <input type="email" id="newAdminEmail" class="input-field bg-white" placeholder="email@empresa.com" />
+              <input type="email" id="newAdminEmail" class="input-field" placeholder="email@empresa.com" />
             </div>
             <div class="w-32">
               <label class="label-text">Senha</label>
-              <input type="password" id="newAdminPassword" class="input-field bg-white" placeholder="••••••" />
+              <input type="password" id="newAdminPassword" class="input-field" placeholder="••••••" />
             </div>
             <div class="w-32">
               <label class="label-text">Nível</label>
-              <select id="newAdminRole" class="input-field bg-white">
+              <select id="newAdminRole" class="input-field">
                 <option value="user">Usuário</option>
                 <option value="admin">Admin</option>
               </select>
@@ -335,16 +335,16 @@ function renderApp() {
               <button id="btnCancelEdit" class="btn-secondary hidden">Cancelar</button>
             </div>
           </div>
-          <p id="editHelperText" class="hidden text-xs text-slate-500 mt-2">Deixe a senha em branco se não quiser alterar.</p>
+          <p id="editHelperText" class="hidden text-xs text-slate-400 mt-2">Deixe a senha em branco se não quiser alterar.</p>
         </div>
         
-        <h3 class="text-sm font-bold text-slate-700 mb-3">Usuários Cadastrados</h3>
-        <div class="overflow-x-auto border border-slate-200 rounded-xl">
+        <h3 class="text-sm font-bold text-slate-300 mb-3">Usuários Cadastrados</h3>
+        <div class="overflow-x-auto border border-slate-700 rounded-xl shadow-inner">
           <table class="w-full text-left text-sm">
-            <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-800/80 border-b border-slate-700">
               <tr><th class="px-5 py-3">Email</th><th class="px-5 py-3">Nível</th><th class="px-5 py-3 text-right">Ações</th></tr>
             </thead>
-            <tbody id="adminUserList" class="divide-y divide-slate-100 bg-white"></tbody>
+            <tbody id="adminUserList" class="divide-y divide-slate-700/50 bg-slate-900/30 backdrop-blur-sm"></tbody>
           </table>
         </div>
       </div>
@@ -548,24 +548,24 @@ function renderResults(mode) {
   const errCount = res.filter(r => r.error || r.labelError).length;
 
   let stats = `
-    <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
-      <div class="text-3xl font-black text-slate-800">${total}</div>
-      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Total processados</div>
+    <div class="bg-slate-800/80 border border-slate-700 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+      <div class="text-3xl font-black text-slate-100">${total}</div>
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Total processados</div>
     </div>`;
   if (mode === 'nfe' || mode === 'both')
-    stats += `<div class="bg-slate-50 border border-pluggto/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+    stats += `<div class="bg-slate-800/80 border border-pluggto/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
       <div class="text-3xl font-black text-pluggto">${withKey}</div>
-      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Com Chave NFe</div>
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Com Chave NFe</div>
     </div>`;
   if (mode === 'label' || mode === 'both')
-    stats += `<div class="bg-slate-50 border border-pluggto/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+    stats += `<div class="bg-slate-800/80 border border-pluggto/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
       <div class="text-3xl font-black text-pluggto">${withLbl}</div>
-      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Com Etiqueta</div>
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Com Etiqueta</div>
     </div>`;
   stats += `
-    <div class="bg-slate-50 border border-blue-200 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
-      <div class="text-3xl font-black text-blue-600">${approved}</div>
-      <div class="text-xs font-bold text-slate-500 uppercase tracking-wide mt-1">Enviar NF-e</div>
+    <div class="bg-slate-800/80 border border-blue-500/30 p-5 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+      <div class="text-3xl font-black text-blue-400">${approved}</div>
+      <div class="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">Enviar NF-e</div>
     </div>`;
   document.getElementById('statsRow').innerHTML = stats;
 
@@ -574,17 +574,17 @@ function renderResults(mode) {
   dlBtns.innerHTML = '';
   if (mode === 'nfe' || mode === 'both') {
     const b = document.createElement('button');
-    b.className = 'bg-green-50 hover:bg-green-100 text-pluggto border border-pluggto/30 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Chaves NFe (.xlsx)';
+    b.className = 'bg-pluggto/10 hover:bg-pluggto/20 text-pluggto border border-pluggto/30 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Chaves NFe (.xlsx)';
     b.onclick = downloadNfeXlsx; dlBtns.appendChild(b);
   }
   if (mode === 'label' || mode === 'both') {
     const b = document.createElement('button');
-    b.className = 'bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Etiquetas (.xlsx)';
+    b.className = 'bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Etiquetas (.xlsx)';
     b.onclick = downloadLabelsXlsx; dlBtns.appendChild(b);
   }
   if (withLbl > 0) {
     const b = document.createElement('button');
-    b.className = 'bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
+    b.className = 'bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 font-bold py-2.5 px-5 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
     b.onclick = () => downloadAllPdfs(false); dlBtns.appendChild(b);
 
     const p = document.createElement('button');
