@@ -126,7 +126,7 @@ export default function NFePage() {
           </CardHeader>
           <CardContent>
             <textarea
-              className="flex min-h-[160px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono"
+              className="block min-h-[160px] w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono"
               placeholder="Cole os IDs..."
               value={orderInput}
               onChange={(e) => setOrderInput(e.target.value)}
