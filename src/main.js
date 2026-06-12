@@ -714,8 +714,8 @@ async function handleDownloadBuffered() {
         }
       }
 
-      // Limite de segurança: buscar no máximo 10 páginas (1000 pedidos)
-      if (page >= 10) {
+      // Limite de segurança: buscar no máximo 20 páginas (agora 20 * 50 = 1000 pedidos)
+      if (page >= 20) {
         keepFetching = false;
       }
 

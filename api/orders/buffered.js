@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
 
     // Busca apenas 1 página por vez para não dar timeout, a paginação será controlada pelo Frontend
     // Usando apenas shipping_informed,buffered,approved. A inclusão de 'pending' estava causando lentidão e TimeOut (10s) na Vercel/Pluggto.
-    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&limit=100&page=${page}`, {
+    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&limit=50&page=${page}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
