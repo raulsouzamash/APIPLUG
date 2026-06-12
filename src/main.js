@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 const state = {
   user: null,
   results: [],
+  bufferedOrders: [],
   mode: null,
 };
 
@@ -251,10 +252,19 @@ function renderApp() {
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700/50 pb-4">
           <h2 class="text-lg font-bold text-white flex items-center gap-2">📅 Agendamentos Encontrados</h2>
         </div>
-        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl mb-6 text-center w-full max-w-xs">
-          <div class="text-2xl font-bold text-white" id="bufferedTotalCount">0</div>
-          <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Total Encontrados</div>
+        
+        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+          <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl text-center w-full sm:w-auto min-w-[150px]">
+            <div class="text-2xl font-bold text-white" id="bufferedTotalCount">0</div>
+            <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Total Encontrados</div>
+          </div>
+          
+          <div class="flex-1 flex flex-col justify-center">
+            <label class="label-text">Filtrar por Agendamento:</label>
+            <input type="date" id="filterBufferedDate" class="input-field max-w-xs" />
+          </div>
         </div>
+
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm whitespace-nowrap">
             <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
@@ -262,6 +272,7 @@ function renderApp() {
                 <th class="px-4 py-3">ID Interno</th>
                 <th class="px-4 py-3">ID Externo</th>
                 <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Data Criação</th>
                 <th class="px-4 py-3">Data Agendamento</th>
               </tr>
             </thead>
@@ -332,6 +343,7 @@ function renderApp() {
   document.getElementById('btnSearchJson').addEventListener('click', handleSearchJson);
   document.getElementById('btnCopyJson').addEventListener('click', copyJsonResult);
   document.getElementById('btnDownloadBuffered').addEventListener('click', handleDownloadBuffered);
+  document.getElementById('filterBufferedDate')?.addEventListener('change', renderBufferedTable);
 
   if (state.user?.role === 'admin') {
     document.getElementById('btnAdminPanel').addEventListener('click', openAdminPanel);
@@ -746,26 +758,10 @@ async function handleDownloadBuffered() {
       return;
     }
 
-    // Mostrar os resultados na tela
-    const card = document.getElementById('bufferedResultsCard');
-    const tbody = document.getElementById('bufferedTableBody');
-    const countEl = document.getElementById('bufferedTotalCount');
-    
-    if(card && tbody && countEl) {
-      card.classList.remove('hidden');
-      countEl.textContent = allOrders.length;
-      
-      tbody.innerHTML = allOrders.map(o => {
-        return `
-          <tr class="hover:bg-slate-800/30 transition-colors">
-            <td class="px-4 py-3 font-mono text-slate-300">${o.id || 'N/A'}</td>
-            <td class="px-4 py-3 font-mono text-slate-300">${o.original_id || o.external || 'N/A'}</td>
-            <td class="px-4 py-3">${statusBadge(o.status)}</td>
-            <td class="px-4 py-3 text-pluggto font-medium">${o.buffering_date || '-'}</td>
-          </tr>
-        `;
-      }).join('');
-    }
+    // Salvar no state e mostrar resultados
+    state.bufferedOrders = allOrders;
+    renderBufferedTable();
+
 
     toast(`Gerando planilha com ${allOrders.length} agendamentos...`, 'success');
     
@@ -796,6 +792,59 @@ async function handleDownloadBuffered() {
     btn.innerHTML = originalText;
     btn.disabled = false;
   }
+}
+
+function formatRelativeDate(dateStr) {
+  if (!dateStr) return '-';
+  const target = new Date(dateStr);
+  const now = new Date();
+  const diffTime = target.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  const formattedDate = target.toLocaleDateString('pt-BR');
+  if (diffDays === 0) return `${formattedDate} (hoje)`;
+  if (diffDays === 1) return `${formattedDate} (amanhã)`;
+  if (diffDays > 1) return `${formattedDate} (daqui a ${diffDays} dias)`;
+  if (diffDays === -1) return `${formattedDate} (ontem)`;
+  return `${formattedDate} (há ${Math.abs(diffDays)} dias)`;
+}
+
+function statusBufferedBadge(status) {
+  if (status === 'shipping_informed') {
+    return `<span class="px-2.5 py-1 rounded-md text-xs font-semibold border bg-yellow-500/10 text-yellow-400 border-yellow-500/30">📅 Agendado</span>`;
+  }
+  return statusBadge(status); // Fallback to existing
+}
+
+function renderBufferedTable() {
+  const card = document.getElementById('bufferedResultsCard');
+  const tbody = document.getElementById('bufferedTableBody');
+  const countEl = document.getElementById('bufferedTotalCount');
+  const filterVal = document.getElementById('filterBufferedDate')?.value || '';
+  
+  if (!card || !tbody || !countEl) return;
+  card.classList.remove('hidden');
+  
+  let orders = state.bufferedOrders;
+  
+  if (filterVal) {
+    orders = orders.filter(o => o.buffering_date && o.buffering_date.startsWith(filterVal));
+  }
+  
+  countEl.textContent = orders.length;
+  
+  tbody.innerHTML = orders.map(o => {
+    const createdStr = o.created ? new Date(o.created).toLocaleDateString('pt-BR') : '-';
+    return `
+      <tr class="hover:bg-slate-800/30 transition-colors">
+        <td class="px-4 py-3 font-mono text-slate-300">${o.id || 'N/A'}</td>
+        <td class="px-4 py-3 font-mono text-slate-300">${o.original_id || o.external || 'N/A'}</td>
+        <td class="px-4 py-3">${statusBufferedBadge(o.status)}</td>
+        <td class="px-4 py-3 text-slate-400">${createdStr}</td>
+        <td class="px-4 py-3 text-pluggto font-medium">${formatRelativeDate(o.buffering_date)}</td>
+      </tr>
+    `;
+  }).join('');
 }
 
 // ─── Admin Panel ──────────────────────────────────────────
