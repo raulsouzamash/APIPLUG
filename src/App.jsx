@@ -21,8 +21,8 @@ export default function App() {
 
   const checkAuth = async () => {
     try {
-      const { user } = await apiFetch('/api/auth/me');
-      if (user) setUser(user);
+      const data = await apiFetch('/api/auth/me');
+      if (data.authenticated) setUser({ email: data.email, role: data.role });
     } catch (e) {
       // Not logged in
     } finally {

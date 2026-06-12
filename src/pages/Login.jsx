@@ -16,11 +16,11 @@ export default function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      await apiFetch('/api/auth/login', {
+      const data = await apiFetch('/api/auth/login', {
         method: 'POST',
         body: { email, password },
       });
-      onLogin({ email });
+      onLogin({ email, role: data.role });
     } catch (err) {
       toast.error(err.message || 'Erro ao fazer login');
     } finally {
