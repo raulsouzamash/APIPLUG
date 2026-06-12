@@ -125,12 +125,15 @@ export default function NFePage() {
             <CardDescription>Cole os IDs um por linha</CardDescription>
           </CardHeader>
           <CardContent>
-            <textarea
-              className="block min-h-[160px] w-full rounded-md border-0 bg-white/5 py-1.5 text-white shadow-sm ring-1 ring-inset ring-white/10 placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6 disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono"
-              placeholder="Cole os IDs..."
-              value={orderInput}
-              onChange={(e) => setOrderInput(e.target.value)}
-            />
+            <div className="relative">
+              <span className="absolute top-3 right-4 font-black text-slate-800 text-6xl opacity-30 select-none pointer-events-none">ORDER IDs</span>
+              <textarea
+                className="block min-h-[200px] w-full rounded-xl border-0 bg-black/40 p-4 text-white shadow-inner ring-1 ring-inset ring-white/5 placeholder:text-gray-600 focus:ring-2 focus:ring-inset focus:ring-blue-500 focus:bg-black/60 text-lg disabled:cursor-not-allowed disabled:opacity-50 resize-none font-mono transition-all relative z-10 bg-transparent"
+                placeholder="Cole os IDs..."
+                value={orderInput}
+                onChange={(e) => setOrderInput(e.target.value)}
+              />
+            </div>
             <div className="flex items-center justify-between mt-4">
               <span className="text-sm text-muted-foreground">
                 <strong>{orderCount}</strong> pedidos
@@ -148,32 +151,34 @@ export default function NFePage() {
             <CardDescription>Escolha a operação que deseja realizar</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[160px]">
+            <div className="flex flex-col gap-4 h-[160px]">
+              <div className="grid grid-cols-2 gap-4 flex-1">
+                <Button 
+                  className="h-full flex flex-col gap-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-300 relative group overflow-hidden"
+                  onClick={() => runAction('nfe')}
+                  disabled={loading}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Key size={24} className="text-blue-400 group-hover:text-blue-300 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" />
+                  <span className="font-semibold text-slate-200">Buscar Chaves</span>
+                </Button>
+                <Button 
+                  className="h-full flex flex-col gap-2 bg-slate-800 border border-slate-700 text-white hover:bg-slate-700 hover:border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300 relative group overflow-hidden"
+                  onClick={() => runAction('label')}
+                  disabled={loading}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <Tag size={24} className="text-emerald-400 group-hover:text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+                  <span className="font-semibold text-slate-200">Baixar Etiquetas</span>
+                </Button>
+              </div>
               <Button 
-                variant="outline" 
-                className="h-full flex flex-col gap-2"
-                onClick={() => runAction('nfe')}
-                disabled={loading}
-              >
-                <Key size={24} />
-                <span>Buscar Chaves</span>
-              </Button>
-              <Button 
-                variant="outline" 
-                className="h-full flex flex-col gap-2"
-                onClick={() => runAction('label')}
-                disabled={loading}
-              >
-                <Tag size={24} />
-                <span>Baixar Etiquetas</span>
-              </Button>
-              <Button 
-                className="sm:col-span-2 h-full flex gap-2"
+                className="w-full flex-1 flex gap-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white border-0 shadow-[0_0_20px_rgba(139,92,246,0.5)] hover:shadow-[0_0_30px_rgba(139,92,246,0.7)] hover:from-violet-500 hover:to-indigo-500 transition-all duration-300 text-lg group"
                 onClick={() => runAction('both')}
                 disabled={loading}
               >
-                <Zap size={20} />
-                <span>Ambos (NFe + Etiquetas)</span>
+                <Zap size={22} className="group-hover:scale-110 transition-transform drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
+                <span className="font-bold tracking-wide">Ambos (NFe + Etiquetas)</span>
               </Button>
             </div>
           </CardContent>

@@ -55,12 +55,14 @@ export default function App() {
       />
       
       <main className="flex-1 container max-w-screen-2xl py-8">
-        <Tabs defaultValue="nfe" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 max-w-2xl mb-8">
-            <TabsTrigger value="nfe">NFe & Etiquetas</TabsTrigger>
-            <TabsTrigger value="buffered">Agendamentos</TabsTrigger>
-            <TabsTrigger value="json">Inspecionar JSON</TabsTrigger>
+        <Tabs defaultValue="nfe" className="w-full flex flex-col items-center">
+          <TabsList className="grid grid-cols-3 w-full max-w-2xl mb-8 h-12 bg-[#1e293b]/50 border border-slate-700/50 rounded-xl p-1">
+            <TabsTrigger value="nfe" className="rounded-lg text-base data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-[0_0_15px_rgba(37,99,235,0.5)] transition-all">NFe & Etiquetas</TabsTrigger>
+            <TabsTrigger value="buffered" className="rounded-lg text-base text-slate-400 font-normal data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:bg-slate-700 transition-all">Agendamentos</TabsTrigger>
+            <TabsTrigger value="json" className="rounded-lg text-base text-slate-400 font-normal data-[state=active]:font-semibold data-[state=active]:text-white data-[state=active]:bg-slate-700 transition-all">Inspecionar JSON</TabsTrigger>
           </TabsList>
+          
+          <div className="w-full">
           
           <TabsContent value="nfe">
             <NFePage />
@@ -73,6 +75,7 @@ export default function App() {
           <TabsContent value="json">
             <JsonPage />
           </TabsContent>
+          </div>
         </Tabs>
       </main>
 

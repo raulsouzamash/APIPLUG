@@ -54,7 +54,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#0f172a] text-slate-300 antialiased font-sans; /* Fixed tailwind slate-900 background */
+    @apply bg-[#0f172a] bg-pattern-hex text-slate-300 antialiased font-sans;
   }
 }
 
