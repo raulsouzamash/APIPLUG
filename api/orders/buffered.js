@@ -48,7 +48,8 @@ module.exports = async function handler(req, res) {
 
         return {
           id: o.id,
-          external: o.external || o.original_id || 'N/A',
+          ext: o.external || o.original_id || 'N/A',
+          created: o.created,
           status: o.status,
           sub_status: o.sub_status,
           buffering_date: bDate,
@@ -57,6 +58,13 @@ module.exports = async function handler(req, res) {
           shipping_method: sMeth,
         };
       });
+
+    // Ordena de forma crescente pela data de agendamento (buffering_date)
+    scheduledOrders.sort((a, b) => {
+      if (!a.buffering_date) return 1;
+      if (!b.buffering_date) return -1;
+      return new Date(a.buffering_date) - new Date(b.buffering_date);
+    });
 
     return res.status(200).json({ 
       ok: true, 
