@@ -50,31 +50,34 @@ function toast(msg, type = 'success') {
 // ─── Login Page ───────────────────────────────────────────
 function renderLogin() {
   document.getElementById('app').innerHTML = `
-    <div class="login-page">
-      <div class="login-box">
-        <div class="login-logo">
-          <div class="login-logo-icon">📦</div>
+    <div class="flex items-center justify-center w-full min-h-[80vh] animate-fade-in">
+      <div class="glass-panel w-full max-w-md p-8 relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-pluggto/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl"></div>
+        
+        <div class="flex items-center gap-4 mb-2 relative z-10">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pluggto to-blue-500 flex items-center justify-center text-2xl shadow-lg shadow-pluggto/30">📦</div>
           <div>
-            <h1>Pluggto Tools</h1>
-            <span>Painel Interno</span>
+            <h1 class="text-2xl font-extrabold text-white tracking-tight">Pluggto Tools</h1>
+            <span class="text-sm font-medium text-pluggto uppercase tracking-wider">Painel Interno</span>
           </div>
         </div>
-        <p class="login-subtitle">Faça login com suas credenciais para continuar.</p>
-        <form id="loginForm" autocomplete="on">
-          <div class="form-group">
-            <label class="form-label" for="email">Email</label>
-            <input class="form-input" id="email" name="email" type="email"
-              placeholder="seu@email.com" autocomplete="email" required />
+        <p class="text-slate-400 text-sm mb-8 relative z-10">Faça login com suas credenciais para continuar.</p>
+        
+        <form id="loginForm" autocomplete="on" class="relative z-10">
+          <div class="mb-5">
+            <label class="label-text" for="email">Email</label>
+            <input class="input-field" id="email" name="email" type="email" placeholder="seu@email.com" autocomplete="email" required />
           </div>
-          <div class="form-group">
-            <label class="form-label" for="password">Senha</label>
-            <input class="form-input" id="password" name="password" type="password"
-              placeholder="••••••••" autocomplete="current-password" required />
+          <div class="mb-8">
+            <label class="label-text" for="password">Senha</label>
+            <input class="input-field" id="password" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required />
           </div>
-          <button class="btn-login" type="submit" id="loginBtn">
+          <button class="btn-primary w-full text-lg py-3 flex justify-center items-center gap-2" type="submit" id="loginBtn">
             <span id="loginBtnText">Entrar</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
           </button>
-          <div class="login-error" id="loginError"></div>
+          <div class="hidden mt-4 text-center text-red-400 text-sm font-medium bg-red-500/10 py-2 px-3 rounded-lg border border-red-500/20" id="loginError"></div>
         </form>
       </div>
     </div>`;
@@ -112,114 +115,133 @@ async function handleLogin(e) {
 // ─── App Page ─────────────────────────────────────────────
 function renderApp() {
   document.getElementById('app').innerHTML = `
-    <header class="app-header">
-      <div class="header-logo">
-        <div class="header-icon">📦</div>
+    <header class="flex items-center justify-between mb-8 pb-6 border-b border-slate-700/50 animate-slide-up">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-pluggto to-blue-500 flex items-center justify-center text-xl shadow-lg shadow-pluggto/20">📦</div>
         <div>
-          <h1>Pluggto Tools</h1>
-          <small>Chaves NFe & Etiquetas de Envio</small>
+          <h1 class="text-xl font-bold text-white leading-tight">Pluggto Tools</h1>
+          <small class="text-xs text-slate-400 font-medium">Chaves NFe & Etiquetas</small>
         </div>
       </div>
-      <div class="header-right">
-        ${state.user?.role === 'admin' ? '<button class="btn-dl blue" id="btnAdminPanel" style="margin-right:10px;">Painel Admin</button>' : ''}
-        <span class="header-user">${state.user?.email || ''}</span>
-        <button class="btn-logout" id="logoutBtn">Sair</button>
+      <div class="flex items-center gap-4">
+        ${state.user?.role === 'admin' ? '<button class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-semibold py-1.5 px-3 rounded-md transition-colors" id="btnAdminPanel">Painel Admin</button>' : ''}
+        <span class="text-sm font-medium text-slate-300 hidden sm:inline-block">${state.user?.email || ''}</span>
+        <button class="text-slate-400 hover:text-white text-sm font-medium transition-colors" id="logoutBtn">Sair</button>
       </div>
     </header>
 
-    <main class="app-main fade-in">
+    <main class="flex flex-col gap-6 animate-slide-up" style="animation-delay: 0.1s;">
 
       <!-- IDs dos pedidos -->
-      <div class="card">
-        <div class="card-label"><div class="step-num">1</div>Cole os IDs dos Pedidos</div>
-        <textarea id="orderInput"
+      <div class="glass-card p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-6 h-6 rounded-full bg-pluggto/20 text-pluggto flex items-center justify-center text-xs font-bold border border-pluggto/30">1</div>
+          <h2 class="text-base font-semibold text-white">Cole os IDs dos Pedidos</h2>
+        </div>
+        <textarea id="orderInput" class="input-field min-h-[120px] font-mono text-sm leading-relaxed"
           placeholder="Cole os IDs dos pedidos, um por linha:
 260610Q971GUG0
 260610Q5SMJKD0
-260611SKD55QD0
 ..."></textarea>
-        <div class="textarea-meta">
-          <div class="count-pill"><b id="orderCount">0</b> pedidos detectados</div>
-          <button class="btn-clear" id="clearBtn">✕ Limpar</button>
+        <div class="flex items-center justify-between mt-3">
+          <div class="text-xs font-medium text-pluggto bg-pluggto/10 border border-pluggto/20 py-1 px-3 rounded-full">
+            <b id="orderCount">0</b> pedidos detectados
+          </div>
+          <button class="text-xs font-medium text-slate-400 hover:text-white transition-colors" id="clearBtn">✕ Limpar</button>
         </div>
       </div>
 
       <!-- Ações -->
-      <div class="card">
-        <div class="card-label"><div class="step-num">2</div>Escolha a Ação</div>
-        <div class="actions-grid">
-          <button class="action-btn nfe" id="btnNfe">
-            <span class="btn-icon">🔑</span>
-            <span class="btn-title">Buscar Chaves NFe</span>
-            <span class="btn-desc">Exporta XLSX com chaves e nº NF</span>
+      <div class="glass-card p-6">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="w-6 h-6 rounded-full bg-pluggto/20 text-pluggto flex items-center justify-center text-xs font-bold border border-pluggto/30">2</div>
+          <h2 class="text-base font-semibold text-white">Escolha a Ação</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <button class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-700/80 hover:border-pluggto/50 transition-all group" id="btnNfe">
+            <span class="text-3xl group-hover:scale-110 transition-transform">🔑</span>
+            <span class="font-semibold text-sm text-white">Buscar Chaves NFe</span>
+            <span class="text-xs text-slate-400 text-center">Exporta XLSX com chaves</span>
           </button>
-          <button class="action-btn label" id="btnLabel">
-            <span class="btn-icon">🏷️</span>
-            <span class="btn-title">Baixar Etiquetas</span>
-            <span class="btn-desc">Links das etiquetas em XLSX + PDFs</span>
+          <button class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-slate-700 bg-slate-800/50 hover:bg-slate-700/80 hover:border-pluggto/50 transition-all group" id="btnLabel">
+            <span class="text-3xl group-hover:scale-110 transition-transform">🏷️</span>
+            <span class="font-semibold text-sm text-white">Baixar Etiquetas</span>
+            <span class="text-xs text-slate-400 text-center">Links das etiquetas</span>
           </button>
-          <button class="action-btn both" id="btnBoth">
-            <span class="btn-icon">⚡</span>
-            <span class="btn-title">Ambos</span>
-            <span class="btn-desc">NFe + Etiquetas em uma operação</span>
+          <button class="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border border-pluggto/30 bg-pluggto/10 hover:bg-pluggto/20 hover:border-pluggto/60 transition-all group shadow-lg shadow-pluggto/5" id="btnBoth">
+            <span class="text-3xl group-hover:scale-110 transition-transform">⚡</span>
+            <span class="font-semibold text-sm text-pluggto">Ambos</span>
+            <span class="text-xs text-slate-400 text-center">NFe + Etiquetas</span>
           </button>
         </div>
       </div>
 
       <!-- Busca de Agendamentos -->
-      <div class="card">
-        <div class="card-label">📅 Exportar Agendamentos Pendentes</div>
-        <p style="font-size: 13px; color: var(--text2); margin-top: 0; margin-bottom: 12px;">Busca e exporta planilha com todos os pedidos que não foram enviados e possuem "buffering_date".</p>
-        <button class="btn-dl green" id="btnDownloadBuffered" style="padding: 10px 16px;">⬇ Baixar Agendamentos (.xlsx)</button>
+      <div class="glass-card p-6 border-l-4 border-l-blue-500">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-1">📅 Exportar Agendamentos Pendentes</h2>
+        <p class="text-sm text-slate-400 mb-4">Busca e exporta planilha com todos os pedidos que não foram enviados e possuem "buffering_date".</p>
+        <button class="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors w-full sm:w-auto" id="btnDownloadBuffered">⬇ Baixar Agendamentos (.xlsx)</button>
       </div>
 
       <!-- Busca JSON -->
-      <div class="card">
-        <div class="card-label">🔎 Inspecionar Pedido (JSON Completo)</div>
-        <div style="display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;">
-          <select id="jsonSearchType" class="form-input" style="width: auto; max-width: 200px;">
+      <div class="glass-card p-6">
+        <h2 class="text-base font-semibold text-white flex items-center gap-2 mb-4">🔎 Inspecionar Pedido (JSON Completo)</h2>
+        <div class="flex flex-col sm:flex-row gap-3 mb-4">
+          <select id="jsonSearchType" class="input-field sm:max-w-[200px]">
             <option value="external">ID Externo (ex: Shopee)</option>
             <option value="internal">ID Pluggto</option>
           </select>
-          <input type="text" id="jsonSearchValue" class="form-input" style="flex: 1; min-width: 200px;" placeholder="Digite o ID para ver o JSON..." />
-          <button class="btn-dl blue" id="btnSearchJson" style="padding: 10px 16px;">Buscar JSON</button>
+          <input type="text" id="jsonSearchValue" class="input-field flex-1" placeholder="Digite o ID para ver o JSON..." />
+          <button class="btn-primary" id="btnSearchJson">Buscar JSON</button>
         </div>
-        <div id="jsonResultContainer" style="display: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 12px; font-weight: 600;">Resultado:</span>
-            <button class="btn-clear" id="btnCopyJson">Copiar JSON</button>
+        <div id="jsonResultContainer" class="hidden">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs font-semibold text-slate-400">Resultado:</span>
+            <button class="text-xs text-pluggto hover:text-white transition-colors" id="btnCopyJson">Copiar JSON</button>
           </div>
-          <pre id="jsonResultPre" style="background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 14px; font-size: 12px; max-height: 400px; overflow: auto; color: var(--accent);"></pre>
+          <pre id="jsonResultPre" class="bg-slate-900 border border-slate-700 rounded-lg p-4 text-xs font-mono text-pluggto max-h-96 overflow-auto"></pre>
         </div>
       </div>
 
       <!-- Progresso -->
-      <div class="card progress-card" id="progressCard">
-        <div class="card-label" id="progressTitle">⏳ Processando...</div>
-        <div class="prog-top">
-          <div class="prog-label" id="progLabel">Iniciando...</div>
-          <div class="prog-frac" id="progFrac">0 / 0</div>
+      <div class="glass-card p-6 hidden" id="progressCard">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="spinner"></span>
+          <h2 class="text-base font-semibold text-white" id="progressTitle">Processando...</h2>
         </div>
-        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
-        <div class="prog-status"><span class="spinner"></span><span id="progStatus">Aguarde...</span></div>
+        <div class="flex justify-between text-sm font-medium mb-2">
+          <span class="text-slate-300" id="progLabel">Iniciando...</span>
+          <span class="text-pluggto" id="progFrac">0 / 0</span>
+        </div>
+        <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden mb-3">
+          <div class="bg-pluggto h-full w-0 transition-all duration-300 shadow-[0_0_10px_#10A958]" id="progFill"></div>
+        </div>
+        <div class="text-xs text-slate-400" id="progStatus">Aguarde...</div>
       </div>
 
       <!-- Resultados -->
-      <div class="card results-card" id="resultsCard">
-        <div class="results-header">
-          <div class="results-title">📊 Resultados</div>
-          <div class="dl-btns" id="dlBtns"></div>
+      <div class="glass-card p-6 hidden animate-fade-in" id="resultsCard">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-700/50 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">📊 Resultados</h2>
+          <div class="flex gap-2" id="dlBtns"></div>
         </div>
-        <div class="stats-row" id="statsRow"></div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6" id="statsRow"></div>
         
-        <div style="margin-bottom: 12px; display: none;" id="filterContainer">
-          <input type="text" id="filterNfInput" class="form-input" placeholder="🔍 Buscar por Nº da NF ou ID do Pedido..." style="max-width: 320px;" />
+        <div class="mb-4 hidden" id="filterContainer">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <span class="text-slate-400">🔍</span>
+            </div>
+            <input type="text" id="filterNfInput" class="input-field pl-10 max-w-sm" placeholder="Buscar por Nº NF ou ID..." />
+          </div>
         </div>
 
-        <div class="table-wrap">
-          <table>
-            <thead><tr id="tableHead"></tr></thead>
-            <tbody id="tableBody"></tbody>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-slate-700">
+              <tr id="tableHead"></tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-700/50"></tbody>
           </table>
         </div>
       </div>
@@ -227,33 +249,46 @@ function renderApp() {
     </main>
     
     <!-- Admin Modal -->
-    <div id="adminModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
-      <div class="modal-content" style="max-width: 600px; width: 100%; background: var(--bg); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="margin: 0; font-size: 18px;">👥 Painel de Usuários</h2>
-          <button id="closeAdminModalBtn" style="background: none; border: none; color: var(--text2); cursor: pointer; font-size: 20px;">✕</button>
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[9999] hidden items-center justify-center p-4 animate-fade-in">
+      <div class="glass-panel w-full max-w-2xl p-6 relative overflow-hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">👥 Painel de Usuários</h2>
+          <button id="closeAdminModalBtn" class="text-slate-400 hover:text-white text-xl transition-colors">✕</button>
         </div>
         
-        <div style="background: var(--bg-alt); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 20px;">
-          <h3 id="adminFormTitle" style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Adicionar Novo Usuário</h3>
-          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <input type="email" id="newAdminEmail" class="form-input" placeholder="Email" style="flex: 1; min-width: 150px;" />
-            <input type="password" id="newAdminPassword" class="form-input" placeholder="Senha" style="width: 120px;" />
-            <select id="newAdminRole" class="form-input" style="width: 120px;">
-              <option value="user">Usuário</option>
-              <option value="admin">Admin</option>
-            </select>
-            <button id="btnCreateUser" class="btn-dl green" style="padding: 8px 16px;">Criar</button>
-            <button id="btnCancelEdit" class="btn-clear" style="display: none; padding: 8px 16px;">Cancelar</button>
+        <div class="bg-slate-900/50 border border-slate-700/50 p-5 rounded-xl mb-6">
+          <h3 id="adminFormTitle" class="text-sm font-semibold text-slate-300 mb-3">Adicionar Novo Usuário</h3>
+          <div class="flex flex-wrap gap-3 items-end">
+            <div class="flex-1 min-w-[200px]">
+              <label class="label-text">Email</label>
+              <input type="email" id="newAdminEmail" class="input-field" placeholder="email@empresa.com" />
+            </div>
+            <div class="w-32">
+              <label class="label-text">Senha</label>
+              <input type="password" id="newAdminPassword" class="input-field" placeholder="••••••" />
+            </div>
+            <div class="w-32">
+              <label class="label-text">Nível</label>
+              <select id="newAdminRole" class="input-field">
+                <option value="user">Usuário</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <div class="flex gap-2">
+              <button id="btnCreateUser" class="btn-primary">Criar</button>
+              <button id="btnCancelEdit" class="btn-secondary hidden">Cancelar</button>
+            </div>
           </div>
-          <p id="editHelperText" style="display: none; font-size: 11px; color: var(--text3); margin-top: 8px; margin-bottom: 0;">Deixe a senha em branco se não quiser alterar.</p>
+          <p id="editHelperText" class="hidden text-xs text-slate-400 mt-2">Deixe a senha em branco se não quiser alterar.</p>
         </div>
         
-        <h3 style="margin-top: 0; font-size: 14px; margin-bottom: 12px;">Usuários Cadastrados</h3>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Email</th><th>Nível</th><th>Ações</th></tr></thead>
-            <tbody id="adminUserList"></tbody>
+        <h3 class="text-sm font-semibold text-slate-300 mb-3">Usuários Cadastrados</h3>
+        <div class="overflow-x-auto border border-slate-700/50 rounded-xl">
+          <table class="w-full text-left text-sm">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-900/80 border-b border-slate-700/50">
+              <tr><th class="px-4 py-3">Email</th><th class="px-4 py-3">Nível</th><th class="px-4 py-3 text-right">Ações</th></tr>
+            </thead>
+            <tbody id="adminUserList" class="divide-y divide-slate-700/50 bg-slate-800/30"></tbody>
           </table>
         </div>
       </div>
@@ -396,14 +431,14 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 // ─── Render Results ───────────────────────────────────────
 function statusBadge(status) {
   const map = {
-    shipping_informed: ['green',  '✓ Enviado'],
-    invoice_error:     ['orange', '⚠ Erro NF'],
-    approved:          ['blue',   '● Enviar NF-e'],
-    delivered:         ['green',  '✓ Entregue'],
-    cancelled:         ['red',    '✕ Cancelado'],
+    shipping_informed: ['bg-green-500/10 text-green-400 border-green-500/30',  '✓ Enviado'],
+    invoice_error:     ['bg-orange-500/10 text-orange-400 border-orange-500/30', '⚠ Erro NF'],
+    approved:          ['bg-blue-500/10 text-blue-400 border-blue-500/30',   '● Enviar NF-e'],
+    delivered:         ['bg-emerald-500/10 text-emerald-400 border-emerald-500/30',  '✓ Entregue'],
+    cancelled:         ['bg-red-500/10 text-red-400 border-red-500/30',    '✕ Cancelado'],
   };
-  const [cls, label] = map[status] || ['gray', status || 'N/A'];
-  return `<span class="badge ${cls}">${label}</span>`;
+  const [cls, label] = map[status] || ['bg-slate-500/10 text-slate-400 border-slate-500/30', status || 'N/A'];
+  return `<span class="px-2.5 py-1 rounded-md text-xs font-semibold border ${cls}">${label}</span>`;
 }
 
 function renderResults(mode) {
@@ -419,13 +454,25 @@ function renderResults(mode) {
   const errCount = res.filter(r => r.error || r.labelError).length;
 
   let stats = `
-    <div class="stat-box c-total"><div class="stat-val">${total}</div><div class="stat-lbl">Total processados</div></div>`;
+    <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+      <div class="text-2xl font-bold text-white">${total}</div>
+      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Total processados</div>
+    </div>`;
   if (mode === 'nfe' || mode === 'both')
-    stats += `<div class="stat-box c-ok"><div class="stat-val">${withKey}</div><div class="stat-lbl">Com Chave NFe</div></div>`;
+    stats += `<div class="bg-slate-800/50 border border-pluggto/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+      <div class="text-2xl font-bold text-pluggto">${withKey}</div>
+      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Com Chave NFe</div>
+    </div>`;
   if (mode === 'label' || mode === 'both')
-    stats += `<div class="stat-box c-ok"><div class="stat-val">${withLbl}</div><div class="stat-lbl">Com Etiqueta</div></div>`;
+    stats += `<div class="bg-slate-800/50 border border-pluggto/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+      <div class="text-2xl font-bold text-pluggto">${withLbl}</div>
+      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Com Etiqueta</div>
+    </div>`;
   stats += `
-    <div class="stat-box c-warn"><div class="stat-val">${approved}</div><div class="stat-lbl">Enviar NF-e</div></div>`;
+    <div class="bg-slate-800/50 border border-blue-500/30 p-4 rounded-xl flex flex-col items-center justify-center text-center">
+      <div class="text-2xl font-bold text-blue-400">${approved}</div>
+      <div class="text-xs font-medium text-slate-400 uppercase tracking-wide mt-1">Enviar NF-e</div>
+    </div>`;
   document.getElementById('statsRow').innerHTML = stats;
 
   // Download buttons
@@ -433,28 +480,28 @@ function renderResults(mode) {
   dlBtns.innerHTML = '';
   if (mode === 'nfe' || mode === 'both') {
     const b = document.createElement('button');
-    b.className = 'btn-dl green'; b.innerHTML = '⬇ Chaves NFe (.xlsx)';
+    b.className = 'bg-pluggto/20 hover:bg-pluggto/30 text-pluggto border border-pluggto/30 font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Chaves NFe (.xlsx)';
     b.onclick = downloadNfeXlsx; dlBtns.appendChild(b);
   }
   if (mode === 'label' || mode === 'both') {
     const b = document.createElement('button');
-    b.className = 'btn-dl blue'; b.innerHTML = '⬇ Etiquetas (.xlsx)';
+    b.className = 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-blue-500/30 font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = '⬇ Etiquetas (.xlsx)';
     b.onclick = downloadLabelsXlsx; dlBtns.appendChild(b);
   }
   if (withLbl > 0) {
     const b = document.createElement('button');
-    b.className = 'btn-dl orange'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
+    b.className = 'bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-orange-500/30 font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm'; b.innerHTML = `⬇ Baixar ${withLbl} PDFs`;
     b.onclick = () => downloadAllPdfs(false); dlBtns.appendChild(b);
 
     const p = document.createElement('button');
-    p.className = 'btn-dl blue'; p.style.marginLeft = '8px'; p.innerHTML = `🖨️ Imprimir Etiquetas`;
+    p.className = 'bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors text-sm flex items-center gap-2'; p.style.marginLeft = '8px'; p.innerHTML = `🖨️ Imprimir Etiquetas`;
     p.onclick = () => downloadAllPdfs(true); dlBtns.appendChild(p);
   }
 
   // Table head
-  let heads = '<th class="td-num">#</th><th>ID Pedido</th><th>Status</th>';
-  if (mode === 'nfe' || mode === 'both') heads += '<th>Nº NF</th><th>Chave NFe</th>';
-  if (mode === 'label' || mode === 'both') heads += '<th>Etiqueta</th>';
+  let heads = '<th class="px-4 py-3 text-center text-slate-500 w-12">#</th><th class="px-4 py-3">ID Pedido</th><th class="px-4 py-3">Status</th>';
+  if (mode === 'nfe' || mode === 'both') heads += '<th class="px-4 py-3">Nº NF</th><th class="px-4 py-3">Chave NFe</th>';
+  if (mode === 'label' || mode === 'both') heads += '<th class="px-4 py-3">Etiqueta</th>';
   document.getElementById('tableHead').innerHTML = heads;
 
   // Table body
@@ -462,18 +509,22 @@ function renderResults(mode) {
   tbody.innerHTML = '';
   res.forEach((r, i) => {
     const tr = document.createElement('tr');
+    tr.className = 'hover:bg-slate-800/50 transition-colors';
     let cols = `
-      <td class="td-num">${i + 1}</td>
-      <td class="td-id">${r.ext}</td>
-      <td>${statusBadge(r.status)}</td>`;
+      <td class="px-4 py-3 text-center text-slate-500 font-mono">${i + 1}</td>
+      <td class="px-4 py-3 font-semibold text-white">${r.ext}</td>
+      <td class="px-4 py-3">${statusBadge(r.status)}</td>`;
     if (mode === 'nfe' || mode === 'both') {
-      cols += `<td class="td-nf">${r.nfeNum ?? '<span style="color:var(--text3)">—</span>'}</td>`;
-      cols += `<td class="td-key" title="${r.nfeKey ?? ''}">${r.nfeKey ?? '<span style="color:var(--text3)">—</span>'}</td>`;
+      cols += `<td class="px-4 py-3 font-mono text-blue-400">${r.nfeNum ?? '<span class="text-slate-600">—</span>'}</td>`;
+      cols += `<td class="px-4 py-3 font-mono text-xs text-slate-300 max-w-xs truncate" title="${r.nfeKey ?? ''}">${r.nfeKey ?? '<span class="text-slate-600">—</span>'}</td>`;
     }
     if (mode === 'label' || mode === 'both') {
-      cols += `<td>${r.labelUrl
-        ? `<a class="link-pdf" href="${r.labelUrl}" target="_blank" rel="noopener">⬇ PDF</a>`
-        : `<span class="no-url">${r.labelError || '—'}</span>`}</td>`;
+      cols += `<td class="px-4 py-3">${r.labelUrl
+        ? `<a class="text-pluggto hover:text-white font-medium hover:underline flex items-center gap-1" href="${r.labelUrl}" target="_blank" rel="noopener">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg> 
+            PDF
+          </a>`
+        : `<span class="text-red-400 font-medium text-xs">${r.labelError || '—'}</span>`}</td>`;
     }
     tr.innerHTML = cols;
     tbody.appendChild(tr);
@@ -729,13 +780,18 @@ async function loadAdminUsers() {
     tbody.innerHTML = '';
     data.users.forEach(u => {
       const tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-700/50 transition-colors';
+      const roleBadge = u.role === 'admin' 
+        ? '<span class="bg-blue-500/10 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded text-xs font-semibold">Admin</span>'
+        : '<span class="bg-green-500/10 text-green-400 border border-green-500/30 px-2 py-0.5 rounded text-xs font-semibold">Usuário</span>';
+        
       tr.innerHTML = `
-        <td>${u.email}</td>
-        <td><span class="badge ${u.role === 'admin' ? 'blue' : 'green'}">${u.role}</span></td>
-        <td>
-          ${u.isMain ? '<span style="color:var(--text3);font-size:12px;">Mestre</span>' : 
-            `<button class="btn-clear" onclick="editAdminUser('${u.email}', '${u.role}')" style="margin-right: 5px;">Editar</button>
-             <button class="btn-clear" onclick="deleteAdminUser('${u.email}')" style="color: var(--danger); border: 1px solid var(--danger);">Excluir</button>`}
+        <td class="px-4 py-3 font-medium text-slate-200">${u.email}</td>
+        <td class="px-4 py-3">${roleBadge}</td>
+        <td class="px-4 py-3 text-right">
+          ${u.isMain ? '<span class="text-slate-500 text-xs font-semibold uppercase tracking-wider bg-slate-800 px-2 py-1 rounded">Mestre</span>' : 
+            `<button class="text-blue-400 hover:text-blue-300 hover:underline text-sm font-medium mr-3 transition-colors" onclick="editAdminUser('${u.email}', '${u.role}')">Editar</button>
+             <button class="text-red-400 hover:text-red-300 hover:underline text-sm font-medium transition-colors" onclick="deleteAdminUser('${u.email}')">Excluir</button>`}
         </td>
       `;
       tbody.appendChild(tr);
