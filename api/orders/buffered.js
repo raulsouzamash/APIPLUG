@@ -53,6 +53,7 @@ module.exports = async function handler(req, res) {
         return {
           id: o.id,
           ext: o.external || o.original_id || 'N/A',
+          other_ids: o.other_ids ? o.other_ids.map(i => String(i.code)) : [],
           created: o.created,
           status: o.status,
           sub_status: o.sub_status,

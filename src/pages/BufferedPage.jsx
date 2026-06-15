@@ -23,16 +23,31 @@ export default function BufferedPage() {
     toast.info('Buscando agendamentos...');
 
     try {
-      const response = await apiFetch('/api/orders/buffered');
-      const data = response.orders || [];
-      setResults(data);
-      if (data.length === 0) {
+      let allOrders = [];
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        toast.info(`Buscando página ${page}...`);
+        const response = await apiFetch(`/api/orders/buffered?page=${page}`);
+        const data = response.orders || [];
+        allOrders = [...allOrders, ...data];
+        
+        hasMore = response.hasMore;
+        if (hasMore) page++;
+        
+        // Limite de segurança para não rodar infinito (20 páginas = 2000 pedidos recentes)
+        if (page > 20) break;
+      }
+
+      setResults(allOrders);
+      if (allOrders.length === 0) {
         toast.warning('Nenhum agendamento encontrado.');
       } else {
-        toast.success(`${data.length} agendamentos encontrados!`);
+        toast.success(`${allOrders.length} agendamentos encontrados!`);
         // Sincroniza automaticamente após a busca, sem precisar clicar
         if (sheetUrl) {
-          syncGoogleSheets(data);
+          syncGoogleSheets(allOrders);
         }
       }
     } catch (e) {
@@ -201,9 +216,10 @@ export default function BufferedPage() {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       const matchExt = r.ext && String(r.ext).toLowerCase().includes(term);
+      const matchOther = r.other_ids && r.other_ids.some(id => String(id).toLowerCase().includes(term));
       const matchNfeKey = r.nfeKey && String(r.nfeKey).toLowerCase().includes(term);
       const matchNfeNum = r.nfNumber && String(r.nfNumber).toLowerCase().includes(term);
-      if (!matchExt && !matchNfeKey && !matchNfeNum) {
+      if (!matchExt && !matchOther && !matchNfeKey && !matchNfeNum) {
         return false;
       }
     }
