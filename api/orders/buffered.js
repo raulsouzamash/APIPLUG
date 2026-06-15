@@ -16,26 +16,38 @@ module.exports = async function handler(req, res) {
   try {
     const token = await getPluggtoToken();
 
-    // Busca apenas 1 página por vez, usando o filtro de status em formato de array para a Pluggto
-    const statuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered', 'shipped'];
-    const statusQuery = statuses.map(s => `status[]=${s}`).join('&');
-    const url = `${API_BASE}/orders?${statusQuery}&sort=-created&limit=100&page=${page}`;
-    const resp = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` }
+    // Busca de forma paralela 1 página para CADA status importante.
+    // Isso garante 100% que a Pluggto vai filtrar certo (pois usamos status= único) 
+    // e garante que pedidos raros (como shipping_informed) não sejam soterrados por milhares de pedidos.
+    const statusesToFetch = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered'];
+    
+    const fetchPromises = statusesToFetch.map(async (status) => {
+      try {
+        const resp = await fetch(`${API_BASE}/orders?status=${status}&sort=-created&limit=100&page=${page}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        return data.result || data.Order || [];
+      } catch (e) {
+        return [];
+      }
     });
 
-    if (!resp.ok) {
-      throw new Error(`Erro Pluggto: ${resp.status}`);
-    }
+    const resultsArray = await Promise.all(fetchPromises);
+    let results = [];
+    resultsArray.forEach(arr => results.push(...arr));
 
-    const data = await resp.json();
-    const results = data.result || data.Order || []; 
+    // Remove possíveis duplicados (caso a API da Pluggto tenha retornado o mesmo pedido por mudança de status no mesmo segundo)
+    const uniqueIds = new Set();
+    results = results.filter(item => {
+      const id = item.Order ? item.Order.id : item.id;
+      if (uniqueIds.has(id)) return false;
+      uniqueIds.add(id);
+      return true;
+    });
 
-    // Pega a data de criação do último pedido da página para o frontend saber se deve continuar
-    const lastOrderDate = results.length > 0 ? results[results.length - 1].created : null;
-
-    // Status válidos para agendamento
-    const validStatuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered', 'shipped'];
+    const validStatuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered'];
 
     // Filtra apenas os que possuem buffering_date (agendamentos) e o status correto
     const scheduledOrders = results
