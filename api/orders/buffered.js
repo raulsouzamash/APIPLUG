@@ -16,8 +16,11 @@ module.exports = async function handler(req, res) {
   try {
     const token = await getPluggtoToken();
 
-    // Busca apenas 1 página por vez, sem filtro de status na URL para evitar erro de sintaxe da Pluggto
-    const resp = await fetch(`${API_BASE}/orders?sort=-created&limit=100&page=${page}`, {
+    // Busca apenas 1 página por vez, usando o filtro de status em formato de array para a Pluggto
+    const statuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered', 'shipped'];
+    const statusQuery = statuses.map(s => `status[]=${s}`).join('&');
+    const url = `${API_BASE}/orders?${statusQuery}&sort=-created&limit=100&page=${page}`;
+    const resp = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` }
     });
 

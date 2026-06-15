@@ -37,7 +37,9 @@ async function exportar() {
   // Vamos buscar até 100 páginas (10.000 pedidos)
   while (page <= 100) {
     process.stdout.write(`Buscando página ${page}... `);
-    let url = `${API_BASE}/orders?sort=-created&limit=100&page=${page}`;
+    const statuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered', 'shipped'];
+    const statusQuery = statuses.map(s => `status[]=${s}`).join('&');
+    let url = `${API_BASE}/orders?${statusQuery}&sort=-created&limit=100&page=${page}`;
     
     const resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
     if (!resp.ok) throw new Error(`Erro: ${resp.status}`);
