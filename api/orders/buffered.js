@@ -103,6 +103,11 @@ module.exports = async function handler(req, res) {
       return new Date(a.buffering_date) - new Date(b.buffering_date);
     });
 
+    // Define a data do último pedido (apenas para compatibilidade, o frontend usa hasMore)
+    const lastOrderDate = results.length > 0 
+      ? (results[results.length - 1].Order ? results[results.length - 1].Order.created : results[results.length - 1].created) 
+      : null;
+
     return res.status(200).json({ 
       ok: true, 
       orders: scheduledOrders, 
