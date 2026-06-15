@@ -22,7 +22,10 @@ export default function JsonPage() {
     setJsonResult(null);
 
     try {
-      const { data } = await apiFetch(`/api/orders/json?type=${searchType}&id=${searchValue}`);
+      const { data } = await apiFetch('/api/orders/json', {
+        method: 'POST',
+        body: { searchType, searchValue }
+      });
       setJsonResult(data);
       toast.success('Pedido encontrado!');
     } catch (e) {
