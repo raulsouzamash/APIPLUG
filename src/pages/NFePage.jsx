@@ -111,8 +111,12 @@ export default function NFePage() {
     }
   };
 
+  const lowerFilter = filter.toLowerCase();
   const filtered = results.filter(r =>
-    (r.id?.includes(filter) || r.ext?.includes(filter) || r.nfNumber?.includes(filter) || r.nfeKey?.includes(filter))
+    (String(r.id || '').toLowerCase().includes(lowerFilter) || 
+     String(r.ext || '').toLowerCase().includes(lowerFilter) || 
+     String(r.nfNumber || '').toLowerCase().includes(lowerFilter) || 
+     String(r.nfeKey || '').toLowerCase().includes(lowerFilter))
   );
 
   return (
