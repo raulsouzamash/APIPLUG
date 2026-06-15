@@ -5,7 +5,7 @@ const fs = require('fs');
 (async () => {
   try {
     const token = await getPluggtoToken();
-    const order = await getOrderByExternal(token, '2000016887988918');
+    const order = await getOrderByExternal(token, '2000013515471907');
     fs.writeFileSync('order_debug.json', JSON.stringify(order, null, 2));
     console.log('Saved to order_debug.json');
   } catch (err) {
