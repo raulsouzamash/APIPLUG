@@ -17,8 +17,8 @@ module.exports = async function handler(req, res) {
     const token = await getPluggtoToken();
 
     // Busca apenas 1 página por vez para não dar timeout, a paginação será controlada pelo Frontend
-    // Usando apenas shipping_informed,buffered,approved e forçando a ordem decrescente (sort=-created)
-    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&sort=-created&limit=100&page=${page}`, {
+    // Usando uma gama maior de status (incluindo invoiced e shipped) para não perder agendados
+    const resp = await fetch(`${API_BASE}/orders?status=approved,in_separation,invoiced,shipping_informed,buffered,shipped&sort=-created&limit=100&page=${page}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -38,7 +38,16 @@ module.exports = async function handler(req, res) {
       .filter(o => {
         const rootBuffered = !!o.buffering_date;
         const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
-        return rootBuffered || shipmentBuffered;
+        if (!rootBuffered && !shipmentBuffered) return false;
+
+        const bDateStr = o.buffering_date || (o.shipments && o.shipments.find(s => s.buffering_date)?.buffering_date);
+        if (!bDateStr) return false;
+
+        const bDate = new Date(bDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return bDate >= today;
       })
       .map(o => {
         const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || null;

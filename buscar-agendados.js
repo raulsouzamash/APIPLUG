@@ -37,7 +37,7 @@ async function exportar() {
   // Vamos buscar até 100 páginas (10.000 pedidos)
   while (page <= 100) {
     process.stdout.write(`Buscando página ${page}... `);
-    const resp = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&limit=${LIMIT}&page=${page}`, {
+    const resp = await fetch(`${API_BASE}/orders?status=approved,in_separation,invoiced,shipping_informed,buffered,shipped&limit=${LIMIT}&page=${page}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
@@ -57,7 +57,16 @@ async function exportar() {
     const pageScheduled = results.filter(o => {
         const rootBuffered = !!o.buffering_date;
         const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
-        return rootBuffered || shipmentBuffered;
+        if (!rootBuffered && !shipmentBuffered) return false;
+
+        const bDateStr = o.buffering_date || (o.shipments && o.shipments.find(s => s.buffering_date)?.buffering_date);
+        if (!bDateStr) return false;
+
+        const bDate = new Date(bDateStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return bDate >= today;
     }).map(o => {
         const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || '';
         return {

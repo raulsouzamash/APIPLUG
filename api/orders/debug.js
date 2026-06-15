@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
     report.push(`Procurando o pedido nas primeiras ${maxPages} páginas do endpoint /orders?status=shipping_informed,buffered,approved`);
 
     while (page <= maxPages) {
-      const resp2 = await fetch(`${API_BASE}/orders?status=shipping_informed,buffered,approved&sort=-created&limit=100&page=${page}`, {
+      const resp2 = await fetch(`${API_BASE}/orders?status=approved,in_separation,invoiced,shipping_informed,buffered,shipped&sort=-created&limit=100&page=${page}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data2 = await resp2.json();
