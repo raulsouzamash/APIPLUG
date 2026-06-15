@@ -37,7 +37,7 @@ export default function Login({ onLogin }) {
           </div>
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-              Pluggto Tools
+              Pluggto API
             </h1>
             <p className="text-muted-foreground">
               Acesse sua conta para continuar

@@ -20,7 +20,7 @@ export default function Header({ user, onLogout, onOpenAdmin }) {
             <Package className="h-8 w-8 text-primary relative z-10" />
           </div>
           <span className="bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Pluggto Tools
+            Pluggto API
           </span>
         </div>
 
