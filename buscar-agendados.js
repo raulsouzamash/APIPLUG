@@ -62,11 +62,11 @@ async function exportar() {
         const bDateStr = o.buffering_date || (o.shipments && o.shipments.find(s => s.buffering_date)?.buffering_date);
         if (!bDateStr) return false;
 
-        const bDate = new Date(bDateStr);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const brTime = new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
+        const today = new Date(brTime);
+        const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
 
-        return bDate >= today;
+        return bDateStr.substring(0, 10) >= todayStr;
     }).map(o => {
         const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || '';
         return {
