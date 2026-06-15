@@ -112,7 +112,7 @@ export default function NFePage() {
   };
 
   const filtered = results.filter(r =>
-    (r.id?.includes(filter) || r.ext?.includes(filter) || r.nfNumber?.includes(filter))
+    (r.id?.includes(filter) || r.ext?.includes(filter) || r.nfNumber?.includes(filter) || r.nfeKey?.includes(filter))
   );
 
   return (
@@ -251,7 +251,7 @@ export default function NFePage() {
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por NF ou ID..."
+                placeholder="Buscar por NF, ID ou Chave..."
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 className="pl-10 max-w-sm"
