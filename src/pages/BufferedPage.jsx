@@ -381,35 +381,35 @@ export default function BufferedPage() {
                       </div>
                     </TableHead>
                     <TableHead className="align-bottom">
-                      <div className="flex flex-col gap-2">
-                        <span>Faturamento</span>
-                        <Input
-                          type="date"
-                          value={filterFaturamento}
-                          onChange={(e) => setFilterFaturamento(e.target.value)}
-                          className="h-8 w-full min-w-[130px] px-2 text-xs"
-                        />
-                      </div>
-                    </TableHead>
-                    <TableHead className="align-bottom">
-                      <div className="flex flex-col gap-2">
-                        <span>Criação</span>
+                      <div className="flex flex-col gap-2 pb-1">
+                        <span className="text-emerald-400 font-bold tracking-wider uppercase text-[10px]">Data Criação</span>
                         <Input
                           type="date"
                           value={filterCreated}
                           onChange={(e) => setFilterCreated(e.target.value)}
-                          className="h-8 w-full min-w-[130px] px-2 text-xs"
+                          className="h-8 w-full min-w-[130px] px-2 text-xs border-emerald-500/30 focus-visible:ring-emerald-500/50 bg-emerald-500/5"
                         />
                       </div>
                     </TableHead>
-                    <TableHead className="align-bottom font-bold">
-                      <div className="flex flex-col gap-2">
-                        <span>Agendamento</span>
+                    <TableHead className="align-bottom">
+                      <div className="flex flex-col gap-2 pb-1">
+                        <span className="text-amber-400 font-bold tracking-wider uppercase text-[10px]">Data Faturam.</span>
+                        <Input
+                          type="date"
+                          value={filterFaturamento}
+                          onChange={(e) => setFilterFaturamento(e.target.value)}
+                          className="h-8 w-full min-w-[130px] px-2 text-xs border-amber-500/30 focus-visible:ring-amber-500/50 bg-amber-500/5"
+                        />
+                      </div>
+                    </TableHead>
+                    <TableHead className="align-bottom">
+                      <div className="flex flex-col gap-2 pb-1">
+                        <span className="text-blue-400 font-bold tracking-wider uppercase text-[10px]">Data Agendam.</span>
                         <Input
                           type="date"
                           value={filterAgendamento}
                           onChange={(e) => setFilterAgendamento(e.target.value)}
-                          className="h-8 w-full min-w-[130px] px-2 text-xs"
+                          className="h-8 w-full min-w-[130px] px-2 text-xs border-blue-500/30 focus-visible:ring-blue-500/50 bg-blue-500/5"
                         />
                       </div>
                     </TableHead>
@@ -426,8 +426,8 @@ export default function BufferedPage() {
                         ) : '-'}
                       </TableCell>
                       <TableCell>{getStatusBadge(r)}</TableCell>
-                      <TableCell className="text-slate-400">{formatDate(r.nfeDate)}</TableCell>
-                      <TableCell className="text-slate-400">{formatDate(r.created)}</TableCell>
+                      <TableCell className="text-emerald-400/80 font-medium">{formatDate(r.created)}</TableCell>
+                      <TableCell className="text-amber-400/80 font-medium">{formatDate(r.nfeDate)}</TableCell>
                       <TableCell className="font-medium text-blue-400">{renderDateWithBadge(r.buffering_date)}</TableCell>
                     </TableRow>
                   ))}
