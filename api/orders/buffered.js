@@ -1,5 +1,5 @@
 const { requireAuth } = require('../_lib/auth');
-const { getPluggtoToken } = require('../_lib/pluggto');
+const { getPluggtoToken, nfeKeyToNumber } = require('../_lib/pluggto');
 
 const API_BASE = 'https://api.plugg.to';
 
@@ -45,6 +45,10 @@ module.exports = async function handler(req, res) {
         const eDate = o.expected_collection_date || (o.shipments && o.shipments[0]?.expected_collection_date) || null;
         const sComp = o.shipping_company || (o.shipments && o.shipments[0]?.shipping_company) || 'N/A';
         const sMeth = o.shipping_method || (o.shipments && o.shipments[0]?.shipping_method) || 'N/A';
+        
+        const shipmentWithNfe = o.shipments?.find(s => s.nfe_key);
+        const nfeKey = shipmentWithNfe?.nfe_key || null;
+        const nfeNum = nfeKey ? nfeKeyToNumber(nfeKey) : null;
 
         return {
           id: o.id,
@@ -56,6 +60,8 @@ module.exports = async function handler(req, res) {
           expected_collection_date: eDate,
           shipping_company: sComp,
           shipping_method: sMeth,
+          nfeKey: nfeKey,
+          nfNumber: nfeNum,
         };
       });
 

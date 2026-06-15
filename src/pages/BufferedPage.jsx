@@ -13,6 +13,7 @@ export default function BufferedPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filterDate, setFilterDate] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || 'https://sheetdb.io/api/v1/qzli5h96oqz4z');
   const [syncing, setSyncing] = useState(false);
 
@@ -194,9 +195,19 @@ export default function BufferedPage() {
   };
 
   const filtered = results.filter(r => {
-    if (!filterDate) return true;
-    if (!r.buffering_date) return false;
-    return r.buffering_date.startsWith(filterDate);
+    if (filterDate && r.buffering_date && !r.buffering_date.startsWith(filterDate)) {
+      return false;
+    }
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchExt = r.ext && String(r.ext).toLowerCase().includes(term);
+      const matchNfeKey = r.nfeKey && String(r.nfeKey).toLowerCase().includes(term);
+      const matchNfeNum = r.nfNumber && String(r.nfNumber).toLowerCase().includes(term);
+      if (!matchExt && !matchNfeKey && !matchNfeNum) {
+        return false;
+      }
+    }
+    return true;
   });
 
   return (
@@ -268,15 +279,25 @@ export default function BufferedPage() {
                 <CardTitle>Agendamentos Encontrados</CardTitle>
                 <CardDescription>{filtered.length} de {results.length} pedidos</CardDescription>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-center gap-4">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                  <Input
+                    type="search"
+                    placeholder="Buscar por ID Externo, NF ou Chave..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 w-full"
+                  />
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   <Label htmlFor="filterDate" className="text-sm whitespace-nowrap">Filtrar por data:</Label>
                   <Input
                     id="filterDate"
                     type="date"
                     value={filterDate}
                     onChange={(e) => setFilterDate(e.target.value)}
-                    className="w-44"
+                    className="w-full sm:w-44"
                   />
                 </div>
               </div>
@@ -315,6 +336,7 @@ export default function BufferedPage() {
                   <TableRow className="bg-muted/50">
                     <TableHead>ID Interno</TableHead>
                     <TableHead>ID Externo</TableHead>
+                    <TableHead>NF</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Data Criação</TableHead>
                     <TableHead className="font-bold">Data Agendamento</TableHead>
@@ -325,6 +347,11 @@ export default function BufferedPage() {
                     <TableRow key={r.id || i} className="hover:bg-white/5 transition-colors border-slate-800">
                       <TableCell className="font-mono text-slate-400">{r.id || '-'}</TableCell>
                       <TableCell className="font-mono font-medium text-slate-300">{r.ext || '-'}</TableCell>
+                      <TableCell className="font-mono text-slate-400">
+                        {r.nfNumber ? (
+                          <div title={r.nfeKey}>{r.nfNumber}</div>
+                        ) : '-'}
+                      </TableCell>
                       <TableCell>{getStatusBadge(r)}</TableCell>
                       <TableCell className="text-slate-400">{formatDate(r.created)}</TableCell>
                       <TableCell className="font-medium text-blue-400">{renderDateWithBadge(r.buffering_date)}</TableCell>
