@@ -51,15 +51,24 @@ async function getOrderByExternal(token, extId) {
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
-  if (!resp.ok) throw new Error(`Erro ao buscar pedido ${extId}: ${resp.status}`);
+  if (!resp.ok) {
+    const errorBody = await resp.text().catch(() => '');
+    throw new Error(`Erro ao buscar pedido ${extId}: ${resp.status} ${errorBody}`);
+  }
 
   const data = await resp.json();
   let orders = [];
-  if (Array.isArray(data))        orders = data;
+  if (Array.isArray(data))             orders = data;
   else if (Array.isArray(data.result)) orders = data.result;
+  else if (Array.isArray(data.Order))  orders = data.Order;
   else if (Array.isArray(data.data))   orders = data.data;
 
-  if (!orders.length) return null;
+  if (!orders.length) {
+    // If Pluggto returned a single object instead of array
+    if (data && data.Order && !Array.isArray(data.Order)) return data.Order;
+    if (data && data.id) return data;
+    return null;
+  }
   return orders[0].Order || orders[0];
 }
 
