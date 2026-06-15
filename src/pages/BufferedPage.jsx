@@ -19,6 +19,7 @@ export default function BufferedPage() {
     }
   });
   const [loading, setLoading] = useState(false);
+  const [filterDateType, setFilterDateType] = useState('buffering_date');
   const [filterDate, setFilterDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || 'https://sheetdb.io/api/v1/qzli5h96oqz4z');
@@ -239,8 +240,11 @@ export default function BufferedPage() {
   };
 
   const filtered = results.filter(r => {
-    if (filterDate && r.buffering_date && !r.buffering_date.startsWith(filterDate)) {
-      return false;
+    if (filterDate) {
+      const targetDateStr = r[filterDateType]; // r.buffering_date, r.created, r.nfeDate
+      if (!targetDateStr || !targetDateStr.startsWith(filterDate)) {
+        return false;
+      }
     }
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -335,15 +339,26 @@ export default function BufferedPage() {
                     className="pl-9 w-full"
                   />
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="flex flex-col gap-1 w-full sm:w-auto">
                   <Label htmlFor="filterDate" className="text-sm whitespace-nowrap">Filtrar por data:</Label>
-                  <Input
-                    id="filterDate"
-                    type="date"
-                    value={filterDate}
-                    onChange={(e) => setFilterDate(e.target.value)}
-                    className="w-full sm:w-44"
-                  />
+                  <div className="flex gap-2">
+                    <select 
+                      className="flex h-10 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={filterDateType}
+                      onChange={(e) => setFilterDateType(e.target.value)}
+                    >
+                      <option value="buffering_date">Agendamento</option>
+                      <option value="created">Criação</option>
+                      <option value="nfeDate">Faturamento</option>
+                    </select>
+                    <Input
+                      id="filterDate"
+                      type="date"
+                      value={filterDate}
+                      onChange={(e) => setFilterDate(e.target.value)}
+                      className="w-full sm:w-40"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

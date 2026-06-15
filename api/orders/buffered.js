@@ -79,6 +79,7 @@ module.exports = async function handler(req, res) {
         const shipmentWithNfe = o.shipments?.find(s => s.nfe_key);
         const nfeKey = shipmentWithNfe?.nfe_key || null;
         const nfeNum = nfeKey ? nfeKeyToNumber(nfeKey) : null;
+        const nfeDate = shipmentWithNfe?.nfe_date || null;
 
         return {
           id: o.id,
@@ -93,6 +94,7 @@ module.exports = async function handler(req, res) {
           shipping_method: sMeth,
           nfeKey: nfeKey,
           nfNumber: nfeNum,
+          nfeDate: nfeDate,
         };
       });
 
