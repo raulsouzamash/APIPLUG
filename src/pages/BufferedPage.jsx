@@ -73,14 +73,36 @@ export default function BufferedPage() {
   };
 
   const downloadXlsx = () => {
-    const data = results.map(r => ({
-      ID_Interno: r.id || '',
-      ID_Externo: r.ext || '',
-      Status_Plataforma: r.status || '',
-      Status_Calculado: getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado',
-      Data_Criacao: r.created || '',
-      Data_Agendamento: r.buffering_date || ''
-    }));
+    const data = results.map(r => {
+      let createdDate = '';
+      if (r.created) {
+        const [year, month, day] = r.created.substring(0, 10).split('-');
+        createdDate = `${day}/${month}/${year}`;
+      }
+      
+      let nfeDateFormatted = '';
+      if (r.nfeDate) {
+        const [year, month, day] = r.nfeDate.substring(0, 10).split('-');
+        nfeDateFormatted = `${day}/${month}/${year}`;
+      }
+      
+      let bufferingDate = '';
+      if (r.buffering_date) {
+        const [year, month, day] = r.buffering_date.substring(0, 10).split('-');
+        bufferingDate = `${day}/${month}/${year}`;
+      }
+
+      return {
+        ID_Interno: r.id || '',
+        ID_Externo: r.ext || '',
+        NF: r.nfNumber || '',
+        Status_Plataforma: r.status || '',
+        Status_Calculado: getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado',
+        Data_Criacao: createdDate,
+        Data_Faturamento: nfeDateFormatted,
+        Data_Agendamento: bufferingDate
+      };
+    });
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Agendados");
@@ -164,7 +186,54 @@ export default function BufferedPage() {
     toast.info('Sincronizando agendamentos...');
 
     try {
-      // 1. Busca os dados que já existem na planilha
+      // Se for URL do Google Apps Script nativo
+      if (sheetUrl.includes('script.google.com')) {
+        const payloadData = dataToSync.map(r => {
+          const calculated = getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado';
+          
+          let formattedDate = '';
+          if (r.buffering_date) {
+            const [year, month, day] = r.buffering_date.substring(0, 10).split('-');
+            formattedDate = `${day}/${month}/${year}`;
+          }
+
+          let createdDate = '';
+          if (r.created) {
+            const [year, month, day] = r.created.substring(0, 10).split('-');
+            createdDate = `${day}/${month}/${year}`;
+          }
+
+          let nfeDateFormatted = '';
+          if (r.nfeDate) {
+            const [year, month, day] = r.nfeDate.substring(0, 10).split('-');
+            nfeDateFormatted = `${day}/${month}/${year}`;
+          }
+          
+          return {
+            id: r.id || '',
+            ext: r.ext || '',
+            nf: r.nfNumber || '',
+            status: r.status || '',
+            calculated_status: calculated,
+            created: createdDate,
+            nfe_date: nfeDateFormatted,
+            buffering_date: formattedDate
+          };
+        });
+
+        // Envia tudo em um único POST para o App Script (No-CORS para evitar bloqueio)
+        await fetch(sheetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'sync', data: payloadData })
+        });
+        
+        toast.success(`Sincronização enviada para a planilha!`);
+        return;
+      }
+
+      // Lógica antiga para SheetDB.io
       const existingRes = await fetch(sheetUrl);
       if (!existingRes.ok) throw new Error('Falha ao buscar dados antigos');
       const existingData = await existingRes.json();
@@ -189,13 +258,20 @@ export default function BufferedPage() {
           const [year, month, day] = r.created.substring(0, 10).split('-');
           createdDate = `${day}/${month}/${year}`;
         }
+        let nfeDateFormatted = '';
+        if (r.nfeDate) {
+          const [year, month, day] = r.nfeDate.substring(0, 10).split('-');
+          nfeDateFormatted = `${day}/${month}/${year}`;
+        }
         
         const payload = {
           id: r.id || '',
           ext: r.ext || '',
+          nf: r.nfNumber || '',
           status: r.status || '',
           calculated_status: calculated,
           created: createdDate,
+          nfe_date: nfeDateFormatted,
           buffering_date: formattedDate
         };
 
