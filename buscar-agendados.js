@@ -37,24 +37,21 @@ async function exportar() {
   // Vamos buscar até 100 páginas (10.000 pedidos)
   while (page <= 100) {
     process.stdout.write(`Buscando página ${page}... `);
-    const resp = await fetch(`${API_BASE}/orders?status=approved,in_separation,invoiced,shipping_informed,buffered,shipped&limit=${LIMIT}&page=${page}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    let url = `${API_BASE}/orders?sort=-created&limit=100&page=${page}`;
     
-    if (!resp.ok) {
-      console.log('Erro na resposta da API.');
-      break;
-    }
+    const resp = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+    if (!resp.ok) throw new Error(`Erro: ${resp.status}`);
     
     const data = await resp.json();
     const results = data.result || data.Order || [];
     
-    if (results.length === 0) {
-      console.log('Fim dos pedidos.');
-      break;
-    }
-    
-    const pageScheduled = results.filter(o => {
+    if (results.length === 0) break;
+
+    const validStatuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered', 'shipped'];
+
+    const pageScheduled = results.map(item => item.Order || item).filter(o => {
+        if (!validStatuses.includes(o.status)) return false;
+
         const rootBuffered = !!o.buffering_date;
         const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
         if (!rootBuffered && !shipmentBuffered) return false;

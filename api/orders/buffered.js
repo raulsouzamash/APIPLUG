@@ -16,9 +16,8 @@ module.exports = async function handler(req, res) {
   try {
     const token = await getPluggtoToken();
 
-    // Busca apenas 1 página por vez para não dar timeout, a paginação será controlada pelo Frontend
-    // Usando uma gama maior de status (incluindo invoiced e shipped) para não perder agendados
-    const resp = await fetch(`${API_BASE}/orders?status=approved,in_separation,invoiced,shipping_informed,buffered,shipped&sort=-created&limit=100&page=${page}`, {
+    // Busca apenas 1 página por vez, sem filtro de status na URL para evitar erro de sintaxe da Pluggto
+    const resp = await fetch(`${API_BASE}/orders?sort=-created&limit=100&page=${page}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -32,10 +31,15 @@ module.exports = async function handler(req, res) {
     // Pega a data de criação do último pedido da página para o frontend saber se deve continuar
     const lastOrderDate = results.length > 0 ? results[results.length - 1].created : null;
 
-    // Filtra apenas os que possuem buffering_date (agendamentos)
+    // Status válidos para agendamento
+    const validStatuses = ['approved', 'in_separation', 'invoiced', 'shipping_informed', 'buffered', 'shipped'];
+
+    // Filtra apenas os que possuem buffering_date (agendamentos) e o status correto
     const scheduledOrders = results
       .map(item => item.Order ? item.Order : item)
       .filter(o => {
+        if (!validStatuses.includes(o.status)) return false;
+
         const rootBuffered = !!o.buffering_date;
         const shipmentBuffered = o.shipments && o.shipments.some(s => s.buffering_date);
         if (!rootBuffered && !shipmentBuffered) return false;
@@ -87,7 +91,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ 
       ok: true, 
       orders: scheduledOrders, 
-      hasMore: results.length === 100,
+      hasMore: results.length > 0,
       lastOrderDate 
     });
   } catch (err) {
