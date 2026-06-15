@@ -43,13 +43,13 @@ module.exports = async function handler(req, res) {
         const bDateStr = o.buffering_date || (o.shipments && o.shipments.find(s => s.buffering_date)?.buffering_date);
         if (!bDateStr) return false;
 
-        // Pega a data de hoje no fuso do Brasil (formato YYYY-MM-DD)
-        const brTime = new Date().toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
-        const today = new Date(brTime);
-        const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
+        // Usa UTC-3 manualmente para evitar problemas de Intl/Locale na Vercel
+        const now = new Date();
+        const brTime = new Date(now.getTime() - 3 * 3600 * 1000);
+        const todayStr = brTime.toISOString().substring(0, 10);
 
-        // Como a data da Pluggto é no formato YYYY-MM-DD, a comparação de string funciona perfeitamente
-        return bDateStr.substring(0, 10) >= todayStr;
+        // Como a data da Pluggto é no formato YYYY-MM-DD, a comparação de string funciona
+        return String(bDateStr).substring(0, 10) >= todayStr;
       })
       .map(o => {
         const bDate = o.buffering_date || (o.shipments && o.shipments[0]?.buffering_date) || null;
