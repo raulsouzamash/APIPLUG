@@ -72,8 +72,26 @@ export default function BufferedPage() {
     }
   };
 
+  const filtered = results.filter(r => {
+    if (filterCreated && r.created && !r.created.startsWith(filterCreated)) return false;
+    if (filterAgendamento && r.buffering_date && !r.buffering_date.startsWith(filterAgendamento)) return false;
+    if (filterFaturamento && r.nfeDate && !r.nfeDate.startsWith(filterFaturamento)) return false;
+    
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchExt = r.ext && String(r.ext).toLowerCase().includes(term);
+      const matchOther = r.other_ids && r.other_ids.some(id => String(id).toLowerCase().includes(term));
+      const matchNfeKey = r.nfeKey && String(r.nfeKey).toLowerCase().includes(term);
+      const matchNfeNum = r.nfNumber && String(r.nfNumber).toLowerCase().includes(term);
+      if (!matchExt && !matchOther && !matchNfeKey && !matchNfeNum) {
+        return false;
+      }
+    }
+    return true;
+  });
+
   const downloadXlsx = () => {
-    const data = results.map(r => {
+    const data = filtered.map(r => {
       let createdDate = '';
       if (r.created) {
         const [year, month, day] = r.created.substring(0, 10).split('-');
@@ -316,23 +334,7 @@ export default function BufferedPage() {
     }
   };
 
-  const filtered = results.filter(r => {
-    if (filterCreated && r.created && !r.created.startsWith(filterCreated)) return false;
-    if (filterAgendamento && r.buffering_date && !r.buffering_date.startsWith(filterAgendamento)) return false;
-    if (filterFaturamento && r.nfeDate && !r.nfeDate.startsWith(filterFaturamento)) return false;
-    
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      const matchExt = r.ext && String(r.ext).toLowerCase().includes(term);
-      const matchOther = r.other_ids && r.other_ids.some(id => String(id).toLowerCase().includes(term));
-      const matchNfeKey = r.nfeKey && String(r.nfeKey).toLowerCase().includes(term);
-      const matchNfeNum = r.nfNumber && String(r.nfNumber).toLowerCase().includes(term);
-      if (!matchExt && !matchOther && !matchNfeKey && !matchNfeNum) {
-        return false;
-      }
-    }
-    return true;
-  });
+
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -463,7 +465,7 @@ export default function BufferedPage() {
                           type="date"
                           value={filterCreated}
                           onChange={(e) => setFilterCreated(e.target.value)}
-                          className="h-8 w-full min-w-[130px] px-2 text-xs border-emerald-500/30 focus-visible:ring-emerald-500/50 bg-emerald-500/5"
+                          className="h-8 w-full min-w-[130px] px-2 text-xs border-emerald-500/30 focus-visible:ring-emerald-500/50 bg-emerald-500/5 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100"
                         />
                       </div>
                     </TableHead>
@@ -474,7 +476,7 @@ export default function BufferedPage() {
                           type="date"
                           value={filterFaturamento}
                           onChange={(e) => setFilterFaturamento(e.target.value)}
-                          className="h-8 w-full min-w-[130px] px-2 text-xs border-amber-500/30 focus-visible:ring-amber-500/50 bg-amber-500/5"
+                          className="h-8 w-full min-w-[130px] px-2 text-xs border-amber-500/30 focus-visible:ring-amber-500/50 bg-amber-500/5 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100"
                         />
                       </div>
                     </TableHead>
@@ -485,7 +487,7 @@ export default function BufferedPage() {
                           type="date"
                           value={filterAgendamento}
                           onChange={(e) => setFilterAgendamento(e.target.value)}
-                          className="h-8 w-full min-w-[130px] px-2 text-xs border-blue-500/30 focus-visible:ring-blue-500/50 bg-blue-500/5"
+                          className="h-8 w-full min-w-[130px] px-2 text-xs border-blue-500/30 focus-visible:ring-blue-500/50 bg-blue-500/5 [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:opacity-50 [&::-webkit-calendar-picker-indicator]:hover:opacity-100"
                         />
                       </div>
                     </TableHead>
