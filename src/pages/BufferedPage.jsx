@@ -23,7 +23,7 @@ export default function BufferedPage() {
   const [filterAgendamento, setFilterAgendamento] = useState('');
   const [filterFaturamento, setFilterFaturamento] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || 'https://sheetdb.io/api/v1/qzli5h96oqz4z');
+  const [sheetUrl, setSheetUrl] = useState(() => localStorage.getItem('sheetUrl') || 'https://sheetdb.io/api/v1/3yznk40nfrjzt');
   const [syncing, setSyncing] = useState(false);
 
   const fetchBuffered = async () => {
