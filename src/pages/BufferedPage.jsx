@@ -10,7 +10,14 @@ import * as XLSX from 'xlsx';
 import { Download, Calendar, Loader as Loader2, Search, RefreshCw, Link as LinkIcon } from 'lucide-react';
 
 export default function BufferedPage() {
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(() => {
+    try {
+      const cached = localStorage.getItem('bufferedOrdersCache');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loading, setLoading] = useState(false);
   const [filterDate, setFilterDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -41,10 +48,16 @@ export default function BufferedPage() {
       }
 
       setResults(allOrders);
+      try {
+        localStorage.setItem('bufferedOrdersCache', JSON.stringify(allOrders));
+      } catch (e) {
+        console.warn('Falha ao salvar no cache', e);
+      }
+
       if (allOrders.length === 0) {
         toast.warning('Nenhum agendamento encontrado.');
       } else {
-        toast.success(`${allOrders.length} agendamentos encontrados!`);
+        toast.success(`${allOrders.length} agendamentos encontrados e salvos no cache!`);
         // Sincroniza automaticamente após a busca, sem precisar clicar
         if (sheetUrl) {
           syncGoogleSheets(allOrders);
@@ -74,14 +87,17 @@ export default function BufferedPage() {
 
   const getDaysDiff = (dateStr) => {
     if (!dateStr) return null;
-    const targetDate = new Date(dateStr);
+    
+    // Pega apenas YYYY-MM-DD para evitar problemas de fuso horário (UTC)
+    const [year, month, day] = dateStr.substring(0, 10).split('-');
+    const targetDate = new Date(year, month - 1, day);
     targetDate.setHours(0, 0, 0, 0);
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
     const diffTime = targetDate.getTime() - today.getTime();
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.round(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const getStatusBadge = (r) => {
@@ -99,7 +115,9 @@ export default function BufferedPage() {
 
   const renderDateWithBadge = (dateStr) => {
     if (!dateStr) return <span className="text-muted-foreground">-</span>;
-    const formatted = new Date(dateStr).toLocaleDateString('pt-BR');
+    
+    const [year, month, day] = dateStr.substring(0, 10).split('-');
+    const formatted = `${day}/${month}/${year}`;
     const diffDays = getDaysDiff(dateStr);
     
     let badge = '';
@@ -131,7 +149,8 @@ export default function BufferedPage() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return <span className="text-muted-foreground">-</span>;
-    return new Date(dateStr).toLocaleDateString('pt-BR');
+    const [year, month, day] = dateStr.substring(0, 10).split('-');
+    return `${day}/${month}/${year}`;
   };
 
   const syncGoogleSheets = async (dataToSync = results) => {
@@ -156,8 +175,18 @@ export default function BufferedPage() {
 
       dataToSync.forEach(r => {
         const calculated = getDaysDiff(r.buffering_date) < 0 ? 'Enviado' : 'Agendado';
-        const formattedDate = r.buffering_date ? new Date(r.buffering_date).toLocaleDateString('pt-BR') : '';
-        const createdDate = r.created ? new Date(r.created).toLocaleDateString('pt-BR') : '';
+        
+        let formattedDate = '';
+        if (r.buffering_date) {
+          const [year, month, day] = r.buffering_date.substring(0, 10).split('-');
+          formattedDate = `${day}/${month}/${year}`;
+        }
+
+        let createdDate = '';
+        if (r.created) {
+          const [year, month, day] = r.created.substring(0, 10).split('-');
+          createdDate = `${day}/${month}/${year}`;
+        }
         
         const payload = {
           id: r.id || '',
